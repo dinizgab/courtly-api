@@ -1,0 +1,38 @@
+networks:
+  db:
+services:
+  api:
+    container_name: booking-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:booking-pass@db/booking-local
+      - DB_NAME=booking-local
+      - DB_USER=postgres
+      - DB_HOST=db
+      - DB_PASS=booking-pass
+      - DB_PORT=5432
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    container_name: booking-db
+    networks:
+        - db
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: booking-local
+      POSTGRES_PASSWORD: booking-pass
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d booking-local -U postgres"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+    restart: always
