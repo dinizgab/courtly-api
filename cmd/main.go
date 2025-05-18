@@ -6,6 +6,7 @@ import (
 	"github.com/dinizgab/booking-mvp/internal/config"
 	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/repository"
+	"github.com/dinizgab/booking-mvp/internal/usecase"
 	"github.com/joho/godotenv"
 )
 
@@ -23,6 +24,8 @@ func main() {
 	}
 
 	_ = repository.NewCompanyRepository(db)
-	_ = repository.NewCourtRepository(db)
+    courtRepository := repository.NewCourtRepository(db)
     _ = repository.NewBookingRepository(db)
+
+    _ = usecase.NewCourtUseCase(courtRepository)
 }
