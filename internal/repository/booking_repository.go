@@ -12,9 +12,9 @@ import (
 
 type (
 	BookingRepository interface {
-		Create(ctx context.Context, booking *entity.Booking) error
-        FindByID(ctx context.Context, id string) (*entity.Booking, error)
-        Update(ctx context.Context, booking *entity.Booking) error
+		Create(ctx context.Context, booking entity.Booking) error
+        FindByID(ctx context.Context, id string) (entity.Booking, error)
+        Update(ctx context.Context, booking entity.Booking) error
         Delete(ctx context.Context, id string) error
 	}
 
@@ -40,7 +40,7 @@ func NewBookingRepository(db database.Database) BookingRepository {
 	}
 }
 
-func (r *bookingRepositoryImpl) Create(ctx context.Context, booking *entity.Booking) error {
+func (r *bookingRepositoryImpl) Create(ctx context.Context, booking entity.Booking) error {
 	_, err := r.db.Exec(
 		ctx,
 		createBookingQuery,
@@ -60,7 +60,7 @@ func (r *bookingRepositoryImpl) Create(ctx context.Context, booking *entity.Book
 	return nil
 }
 
-func (r *bookingRepositoryImpl) FindByID(ctx context.Context, id string) (*entity.Booking, error) {
+func (r *bookingRepositoryImpl) FindByID(ctx context.Context, id string) (entity.Booking, error) {
     var booking entity.Booking
     err := r.db.QueryRow(ctx, findBookingByIDQuery, id).Scan(
         &booking.ID,
@@ -75,15 +75,15 @@ func (r *bookingRepositoryImpl) FindByID(ctx context.Context, id string) (*entit
     )
     if err != nil {
         if err == pgx.ErrNoRows {
-            return nil, fmt.Errorf("BookingRepository.FindByID: booking not found")
+            return entity.Booking{}, fmt.Errorf("BookingRepository.FindByID: booking not found")
         }
-        return nil, fmt.Errorf("BookingRepository.FindByID: %w", err)
+        return entity.Booking{}, fmt.Errorf("BookingRepository.FindByID: %w", err)
     }
 
-    return &booking, nil
+    return booking, nil
 }
 
-func (r *bookingRepositoryImpl) Update(ctx context.Context, booking *entity.Booking) error {
+func (r *bookingRepositoryImpl) Update(ctx context.Context, booking entity.Booking) error {
     return nil
 }
 
