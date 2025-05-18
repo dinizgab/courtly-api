@@ -28,18 +28,46 @@ func NewCourtUseCase(courtRepository repository.CourtRepository) CourtUseCaseInt
 }
 
 func (u *CourtUseCase) Create(ctx context.Context, court entity.Court) error {
+	err := u.courtRepository.Create(ctx, &court)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (u *CourtUseCase) FindByID(ctx context.Context, id string) (entity.Court, error) {
-	return entity.Court{}, nil
+	court, err := u.courtRepository.FindByID(ctx, id)
+	if err != nil {
+		return entity.Court{}, err
+	}
+
+	return court, nil
 }
 
 func (u *CourtUseCase) ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error) {
+	courts, err := u.courtRepository.ListByCompany(ctx, companyID)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	return courts, nil
 }
 
 func (u *CourtUseCase) Update(ctx context.Context, id string, court entity.Court) error {
+	err := u.courtRepository.Update(ctx, &court)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *CourtUseCase) Delete(ctx context.Context, id string) error {
+	err := u.courtRepository.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
