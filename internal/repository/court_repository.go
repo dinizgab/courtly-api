@@ -13,7 +13,7 @@ import (
 type (
 	CourtRepository interface {
 		Create(ctx context.Context, c *entity.Court) error
-		FindByID(ctx context.Context, id string) (*entity.Court, error)
+		FindByID(ctx context.Context, id string) (entity.Court, error)
 		ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error)
 		Update(ctx context.Context, c *entity.Court) error
 		Delete(ctx context.Context, id string) error
@@ -50,7 +50,7 @@ func (r *courtRepositoryImpl) Create(ctx context.Context, c *entity.Court) error
 	return nil
 }
 
-func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (*entity.Court, error) {
+func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.Court, error) {
 	var court entity.Court
 	err := r.db.QueryRow(ctx, findCourtByIDQuery, id).Scan(
 		&court.ID,
@@ -63,13 +63,13 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (*entity.
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("CourtRepository.FindByID: court not found: %w", err)
+			return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: court not found: %w", err)
 		}
 
-		return nil, fmt.Errorf("CourtRepository.FindByID: %w", err)
+		return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: %w", err)
 	}
 
-	return &court, nil
+	return court, nil
 }
 
 func (r *courtRepositoryImpl) ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error) {
