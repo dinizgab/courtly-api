@@ -13,9 +13,9 @@ import (
 
 type (
 	CompanyRepository interface {
-		Create(ctx context.Context, company *entity.Company) error
-		FindByID(ctx context.Context, id string) (*entity.Company, error)
-		FindBySlug(ctx context.Context, slug string) (*entity.Company, error)
+		Create(ctx context.Context, company entity.Company) error
+		FindByID(ctx context.Context, id string) (entity.Company, error)
+		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
 		Update(ctx context.Context, company *entity.Company) error
 		Delete(ctx context.Context, id string) error
 	}
@@ -44,7 +44,7 @@ func NewCompanyRepository(db database.Database) CompanyRepository {
 	}
 }
 
-func (r *companyRepositoryImpl) Create(ctx context.Context, company *entity.Company) error {
+func (r *companyRepositoryImpl) Create(ctx context.Context, company entity.Company) error {
 	_, err := r.db.Exec(ctx, createCompanyQuery, company.Name, company.Address, company.Phone, company.Email, company.Slug)
 	if err != nil {
 		return fmt.Errorf("CompanyRepository.Create: %w", err)
@@ -53,7 +53,7 @@ func (r *companyRepositoryImpl) Create(ctx context.Context, company *entity.Comp
 	return nil
 }
 
-func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (*entity.Company, error) {
+func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (entity.Company, error) {
     var company entity.Company
     err := r.db.QueryRow(ctx, findCompanyByIDQuery, id).Scan(
         &company.ID,
@@ -65,16 +65,16 @@ func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (*entit
     )
     if err != nil {
         if err == pgx.ErrNoRows {
-            return nil, fmt.Errorf("CompanyRepository.FindByID: company not found")
+            return entity.Company{}, fmt.Errorf("CompanyRepository.FindByID: company not found")
         }
 
-        return nil, fmt.Errorf("CompanyRepository.FindByID: %w", err)
+        return entity.Company{}, fmt.Errorf("CompanyRepository.FindByID: %w", err)
     }
 
-    return &company, nil
+    return company, nil
 }
 
-func (r *companyRepositoryImpl) FindBySlug(ctx context.Context, slug string) (*entity.Company, error) {
+func (r *companyRepositoryImpl) FindBySlug(ctx context.Context, slug string) (entity.Company, error) {
     var company entity.Company
     err := r.db.QueryRow(ctx, findCompanyBySlugQuery, slug).Scan(
         &company.ID,
@@ -86,13 +86,13 @@ func (r *companyRepositoryImpl) FindBySlug(ctx context.Context, slug string) (*e
     )
     if err != nil {
         if err == pgx.ErrNoRows {
-            return nil, fmt.Errorf("CompanyRepository.FindByID: company not found")
+            return entity.Company{}, fmt.Errorf("CompanyRepository.FindByID: company not found")
         }
 
-        return nil, fmt.Errorf("CompanyRepository.FindByID: %w", err)
+        return entity.Company{}, fmt.Errorf("CompanyRepository.FindByID: %w", err)
     }
 
-    return &company, nil
+    return company, nil
 }
 
 func (r *companyRepositoryImpl) Update(ctx context.Context, company *entity.Company) error {
