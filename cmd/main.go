@@ -23,9 +23,10 @@ func main() {
 		log.Println(err)
 	}
 
-	_ = repository.NewCompanyRepository(db)
-    courtRepository := repository.NewCourtRepository(db)
-    _ = repository.NewBookingRepository(db)
+	companyRepository := repository.NewCompanyRepository(db)
+	courtRepository := repository.NewCourtRepository(db)
+	_ = repository.NewBookingRepository(db)
 
-    _ = usecase.NewCourtUseCase(courtRepository)
+	_ = usecase.NewCourtUseCase(courtRepository)
+	_ = usecase.NewCompanyUsecase(companyRepository)
 }
