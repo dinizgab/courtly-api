@@ -25,9 +25,9 @@ func main() {
 
 	companyRepository := repository.NewCompanyRepository(db)
 	courtRepository := repository.NewCourtRepository(db)
-    bookingRepository := repository.NewBookingRepository(db)
+	bookingRepository := repository.NewBookingRepository(db)
 
 	_ = usecase.NewCourtUseCase(courtRepository)
 	_ = usecase.NewCompanyUsecase(companyRepository)
-    _ = usecase.NewBookingUsecase(bookingRepository)
+	_ = usecase.NewBookingUsecase(bookingRepository)
 }

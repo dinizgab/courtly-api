@@ -27,6 +27,8 @@ func NewBookingUsecase(bookingRepository repository.BookingRepository) BookingUs
 }
 
 func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking) error {
+    // TODO - Add the verification code into the booking
+    // TODO - Send email to user after create booking
 	err := u.bookingRepository.Create(ctx, booking)
 	if err != nil {
 		return err
