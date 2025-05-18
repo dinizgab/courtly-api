@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/dinizgab/booking-mvp/internal/config"
@@ -13,32 +14,34 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
+    err := godotenv.Load()
 	if err != nil {
-		log.Println(err)
+        log.Fatalf("Error loading env file: %v", err)
 	}
-
 	config := config.New()
 
 	db, err := database.New(config.DB)
 	if err != nil {
 		log.Println(err)
 	}
+    defer db.Close()
 
 	companyRepository := repository.NewCompanyRepository(db)
 	courtRepository := repository.NewCourtRepository(db)
 	bookingRepository := repository.NewBookingRepository(db)
 
-    courtUsecase := usecase.NewCourtUseCase(courtRepository)
+	courtUsecase := usecase.NewCourtUseCase(courtRepository)
 	_ = usecase.NewCompanyUsecase(companyRepository)
 	_ = usecase.NewBookingUsecase(bookingRepository)
 
-    router := gin.Default()
+	router := gin.Default()
 
-    router.POST("/courts", handlers.CreateCourt(courtUsecase))
-    router.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
-    router.GET("/companies/:company_id/courts", handlers.ListCourtsByCompany(courtUsecase))
-    router.GET("/courts/:id/bookings", handlers.ListCourtBookingsByID(courtUsecase))
-    router.PUT("/courts/:id", handlers.UpdateCourt(courtUsecase))
-    router.DELETE("/courts/:id", handlers.DeleteCourt(courtUsecase))
+	router.POST("/courts", handlers.CreateCourt(courtUsecase))
+	router.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
+	router.GET("/companies/:company_id/courts", handlers.ListCourtsByCompany(courtUsecase))
+	router.GET("/courts/:id/bookings", handlers.ListCourtBookingsByID(courtUsecase))
+	router.PUT("/courts/:id", handlers.UpdateCourt(courtUsecase))
+	router.DELETE("/courts/:id", handlers.DeleteCourt(courtUsecase))
+
+    router.Run(fmt.Sprintf(":%s", config.API.Port))
 }

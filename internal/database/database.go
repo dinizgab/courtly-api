@@ -13,6 +13,7 @@ type Database interface {
 	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
 	Query(ctx context.Context, sql string, arguments ...any) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, arguments ...any) pgx.Row
+	Close() error
 }
 
 type databaseImpl struct {
@@ -46,4 +47,8 @@ func (d *databaseImpl) Query(ctx context.Context, sql string, arguments ...any) 
 
 func (d *databaseImpl) QueryRow(ctx context.Context, sql string, arguments ...any) pgx.Row {
 	return d.conn.QueryRow(ctx, sql, arguments...)
+}
+
+func (d *databaseImpl) Close() error {
+	return d.conn.Close(context.Background())
 }
