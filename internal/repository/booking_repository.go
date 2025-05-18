@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+    _ "embed"
 
 	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/entity"
