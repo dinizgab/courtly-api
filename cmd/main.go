@@ -24,5 +24,5 @@ func main() {
 
 	_ = repository.NewCompanyRepository(db)
 	_ = repository.NewCourtRepository(db)
-
+    _ = repository.NewBookingRepository(db)
 }
