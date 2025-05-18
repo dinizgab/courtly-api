@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 
+	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/jackc/pgx/v5"
 )
@@ -19,7 +20,7 @@ type (
 	}
 
 	courtRepositoryImpl struct {
-		db *pgx.Conn
+		db database.Database
 	}
 )
 
@@ -34,7 +35,7 @@ var (
     deleteCourtQuery string
 )
 
-func NewCourtRepository(db *pgx.Conn) CourtRepository {
+func NewCourtRepository(db database.Database) CourtRepository {
 	return &courtRepositoryImpl{
 		db: db,
 	}

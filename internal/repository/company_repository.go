@@ -6,6 +6,7 @@ import (
 
 	_ "embed"
 
+	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/jackc/pgx/v5"
 )
@@ -20,7 +21,7 @@ type (
 	}
 
 	companyRepositoryImpl struct {
-		db *pgx.Conn
+		db database.Database
 	}
 )
 
@@ -37,7 +38,7 @@ var (
 	deleteCompanyQuery string
 )
 
-func NewCompanyRepository(db *pgx.Conn) CompanyRepository {
+func NewCompanyRepository(db database.Database) CompanyRepository {
 	return &companyRepositoryImpl{
 		db: db,
 	}
