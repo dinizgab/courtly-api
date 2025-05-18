@@ -122,9 +122,9 @@ func (r *courtRepositoryImpl) ListByCompany(ctx context.Context, companyID strin
 			&court.ID,
 			&court.CompanyId,
 			&court.Name,
-			&court.IsActive,
 			&court.SportType,
 			&court.HourlyPrice,
+			&court.IsActive,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("CourtRepository.ListByCompany: %w", err)
@@ -142,6 +142,7 @@ func (r *courtRepositoryImpl) ListByCompany(ctx context.Context, companyID strin
 func (r *courtRepositoryImpl) Update(ctx context.Context, c *entity.Court) error {
 	return nil
 }
+
 func (r *courtRepositoryImpl) Delete(ctx context.Context, id string) error {
 	_, err := r.db.Exec(ctx, deleteCourtQuery, id)
 	if err != nil {
