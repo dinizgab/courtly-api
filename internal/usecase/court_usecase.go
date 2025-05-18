@@ -8,11 +8,11 @@ import (
 )
 
 type (
-	CourtUseCase struct {
+	courtUseCaseImpl struct {
 		courtRepository repository.CourtRepository
 	}
 
-	CourtUseCaseInterface interface {
+	CourtUseCase interface {
 		Create(ctx context.Context, court entity.Court) error
 		FindByID(ctx context.Context, id string) (entity.Court, error)
 		ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error)
@@ -21,13 +21,13 @@ type (
 	}
 )
 
-func NewCourtUseCase(courtRepository repository.CourtRepository) CourtUseCaseInterface {
-	return &CourtUseCase{
+func NewCourtUseCase(courtRepository repository.CourtRepository) CourtUseCase {
+	return &courtUseCaseImpl{
 		courtRepository: courtRepository,
 	}
 }
 
-func (u *CourtUseCase) Create(ctx context.Context, court entity.Court) error {
+func (u *courtUseCaseImpl) Create(ctx context.Context, court entity.Court) error {
 	err := u.courtRepository.Create(ctx, &court)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func (u *CourtUseCase) Create(ctx context.Context, court entity.Court) error {
 	return nil
 }
 
-func (u *CourtUseCase) FindByID(ctx context.Context, id string) (entity.Court, error) {
+func (u *courtUseCaseImpl) FindByID(ctx context.Context, id string) (entity.Court, error) {
 	court, err := u.courtRepository.FindByID(ctx, id)
 	if err != nil {
 		return entity.Court{}, err
@@ -45,7 +45,7 @@ func (u *CourtUseCase) FindByID(ctx context.Context, id string) (entity.Court, e
 	return court, nil
 }
 
-func (u *CourtUseCase) ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error) {
+func (u *courtUseCaseImpl) ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error) {
 	courts, err := u.courtRepository.ListByCompany(ctx, companyID)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (u *CourtUseCase) ListByCompany(ctx context.Context, companyID string) ([]e
 	return courts, nil
 }
 
-func (u *CourtUseCase) Update(ctx context.Context, id string, court entity.Court) error {
+func (u *courtUseCaseImpl) Update(ctx context.Context, id string, court entity.Court) error {
 	err := u.courtRepository.Update(ctx, &court)
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func (u *CourtUseCase) Update(ctx context.Context, id string, court entity.Court
 	return nil
 }
 
-func (u *CourtUseCase) Delete(ctx context.Context, id string) error {
+func (u *courtUseCaseImpl) Delete(ctx context.Context, id string) error {
 	err := u.courtRepository.Delete(ctx, id)
 	if err != nil {
 		return err
