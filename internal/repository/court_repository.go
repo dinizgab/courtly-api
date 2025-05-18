@@ -14,6 +14,7 @@ type (
 	CourtRepository interface {
 		Create(ctx context.Context, c *entity.Court) error
 		FindByID(ctx context.Context, id string) (entity.Court, error)
+		ListBookingsByID(ctx context.Context, id string) ([]entity.Booking, error)
 		ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error)
 		Update(ctx context.Context, c *entity.Court) error
 		Delete(ctx context.Context, id string) error
@@ -29,10 +30,12 @@ var (
 	createCourtQuery string
 	//go:embed sql/court/find_court_by_id.sql
 	findCourtByIDQuery string
+	//go:embed sql/court/list_bookings_by_id.sql
+	listBookingsByIDQuery string
 	//go:embed sql/court/list_court_by_company.sql
 	listCourtByCompanyQuery string
-    //go:embed sql/court/delete_court.sql
-    deleteCourtQuery string
+	//go:embed sql/court/delete_court.sql
+	deleteCourtQuery string
 )
 
 func NewCourtRepository(db database.Database) CourtRepository {
@@ -72,6 +75,39 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 	return court, nil
 }
 
+func (r *courtRepositoryImpl) ListBookingsByID(ctx context.Context, id string) ([]entity.Booking, error) {
+	rows, err := r.db.Query(ctx, listBookingsByIDQuery, id)
+	if err != nil {
+		return nil, fmt.Errorf("CourtRepository.ListBookingsByID: %w", err)
+	}
+
+	defer rows.Close()
+	var bookings []entity.Booking
+	for rows.Next() {
+		var booking entity.Booking
+		err := rows.Scan(
+			&booking.ID,
+			&booking.CourtId,
+			&booking.StartTime,
+			&booking.EndTime,
+			&booking.GuestName,
+			&booking.GuestEmail,
+			&booking.GuestPhone,
+			&booking.Status,
+			&booking.VerificationCode,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("CourtRepository.ListBookingsByID: %w", err)
+		}
+		bookings = append(bookings, booking)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("CourtRepository.ListBookingsByID: %w", err)
+	}
+
+	return bookings, nil
+}
+
 func (r *courtRepositoryImpl) ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error) {
 	rows, err := r.db.Query(ctx, listCourtByCompanyQuery, companyID)
 	if err != nil {
@@ -107,10 +143,10 @@ func (r *courtRepositoryImpl) Update(ctx context.Context, c *entity.Court) error
 	return nil
 }
 func (r *courtRepositoryImpl) Delete(ctx context.Context, id string) error {
-    _, err := r.db.Exec(ctx, deleteCourtQuery, id)
-    if err != nil {
-        return fmt.Errorf("CourtRepository.Delete: %w", err)
-    }
+	_, err := r.db.Exec(ctx, deleteCourtQuery, id)
+	if err != nil {
+		return fmt.Errorf("CourtRepository.Delete: %w", err)
+	}
 
 	return nil
 }
