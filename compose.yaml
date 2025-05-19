@@ -15,6 +15,7 @@ services:
       - DB_HOST=db
       - DB_PASS=booking-pass
       - DB_PORT=5432
+      - API_PORT=8000
     ports:
       - 8000:8000
     depends_on:
