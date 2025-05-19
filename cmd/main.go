@@ -9,14 +9,15 @@ import (
 	"github.com/dinizgab/booking-mvp/internal/handlers"
 	"github.com/dinizgab/booking-mvp/internal/repository"
 	"github.com/dinizgab/booking-mvp/internal/usecase"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-    err := godotenv.Load()
+	err := godotenv.Load()
 	if err != nil {
-        log.Fatalf("Error loading env file: %v", err)
+		log.Fatalf("Error loading env file: %v", err)
 	}
 	config := config.New()
 
@@ -24,7 +25,7 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-    defer db.Close()
+	defer db.Close()
 
 	companyRepository := repository.NewCompanyRepository(db)
 	courtRepository := repository.NewCourtRepository(db)
@@ -36,6 +37,8 @@ func main() {
 
 	router := gin.Default()
 
+	router.Use(cors.Default())
+
 	router.POST("/courts", handlers.CreateCourt(courtUsecase))
 	router.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
 	router.GET("/companies/:company_id/courts", handlers.ListCourtsByCompany(courtUsecase))
@@ -43,5 +46,5 @@ func main() {
 	router.PUT("/courts/:id", handlers.UpdateCourt(courtUsecase))
 	router.DELETE("/courts/:id", handlers.DeleteCourt(courtUsecase))
 
-    router.Run(fmt.Sprintf(":%s", config.API.Port))
+	router.Run(fmt.Sprintf(":%s", config.API.Port))
 }
