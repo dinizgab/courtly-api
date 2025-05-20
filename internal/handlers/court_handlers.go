@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"log"
-	"mime/multipart"
-	"strings"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/usecase"
@@ -28,15 +26,14 @@ func CreateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
 			return
 		}
 
-		files := form.File
-		photos := make([]*multipart.FileHeader, 0)
-		for i, fhArr := range files {
-			if strings.HasPrefix(i, "photo_") {
-				photos = append(photos, fhArr[0])
-			}
-		}
-
 		// TODO - Save court photos
+		//files := form.File
+		//photos := make([]*multipart.FileHeader, 0)
+		//for i, fhArr := range files {
+		//	if strings.HasPrefix(i, "photo_") {
+		//		photos = append(photos, fhArr[0])
+		//	}
+		//}
 
 		err = uc.Create(c.Request.Context(), court)
 		if err != nil {
