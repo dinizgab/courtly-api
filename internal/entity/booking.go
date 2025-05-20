@@ -13,7 +13,6 @@ const (
 type Booking struct {
 	ID               string        `json:"id"`
 	CourtId          string        `json:"court_id"`
-	Court            Court         `json:"court"`
 	StartTime        time.Time     `json:"start_time"`
 	EndTime          time.Time     `json:"end_time"`
 	CreatedAt        time.Time     `json:"created_at"`
@@ -22,4 +21,5 @@ type Booking struct {
 	GuestPhone       string        `json:"guest_phone"`
 	GuestEmail       string        `json:"guest_email"`
 	VerificationCode string        `json:"verification_code"`
+	Court            *Court         `json:"court,omitempty"`
 }

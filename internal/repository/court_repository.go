@@ -96,9 +96,9 @@ func (r *courtRepositoryImpl) ListBookingsByID(ctx context.Context, id string) (
 	if err != nil {
 		return nil, fmt.Errorf("CourtRepository.ListBookingsByID: %w", err)
 	}
-
 	defer rows.Close()
-	var bookings []entity.Booking
+
+    bookings := make([]entity.Booking, 0)
 	for rows.Next() {
 		var booking entity.Booking
 		err := rows.Scan(
@@ -106,6 +106,8 @@ func (r *courtRepositoryImpl) ListBookingsByID(ctx context.Context, id string) (
 			&booking.CourtId,
 			&booking.StartTime,
 			&booking.EndTime,
+            &booking.CreatedAt,
+            &booking.Status,
 			&booking.GuestName,
 			&booking.GuestEmail,
 			&booking.GuestPhone,
