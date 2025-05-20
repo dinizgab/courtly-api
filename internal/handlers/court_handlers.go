@@ -1,7 +1,11 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
+	"mime/multipart"
+	"strings"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/usecase"
@@ -10,16 +14,36 @@ import (
 
 func CreateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
 	return func(c *gin.Context) {
-		var court entity.Court
-		if err := c.ShouldBindJSON(&court); err != nil {
-            log.Println(err)
-			c.JSON(400, gin.H{"error": "Invalid input"})
+		form, err := c.MultipartForm()
+		if err != nil {
+			log.Println(err)
+			c.JSON(400, gin.H{"error": "Invalid form data"})
 			return
 		}
 
-		err := uc.Create(c.Request.Context(), court)
+		courtInfos := form.Value["court_info"][0]
+		var court entity.Court
+		if err := json.Unmarshal([]byte(courtInfos), &court); err != nil {
+			log.Println(err)
+			c.JSON(400, gin.H{"error": "Invalid input"})
+			return
+		}
+        fmt.Println("Court Info:", courtInfos)
+		fmt.Println(court)
+
+		files := form.File
+		photos := make([]*multipart.FileHeader, 0)
+		for i, fhArr := range files {
+			if strings.HasPrefix(i, "photo_") {
+				photos = append(photos, fhArr[0])
+			}
+		}
+
+		// TODO - Save court photos
+
+		err = uc.Create(c.Request.Context(), court)
 		if err != nil {
-            log.Println(err)
+			log.Println(err)
 			c.JSON(500, gin.H{"error": "Failed to create court"})
 			return
 		}
@@ -33,7 +57,7 @@ func FindCourtByID(uc usecase.CourtUseCase) func(*gin.Context) {
 		id := c.Param("id")
 		court, err := uc.FindByID(c.Request.Context(), id)
 		if err != nil {
-            log.Println(err)
+			log.Println(err)
 			c.JSON(404, gin.H{"error": "Court not found"})
 			return
 		}
@@ -47,7 +71,7 @@ func ListCourtsByCompany(uc usecase.CourtUseCase) func(*gin.Context) {
 		companyID := c.Param("company_id")
 		courts, err := uc.ListByCompany(c.Request.Context(), companyID)
 		if err != nil {
-            log.Println(err)
+			log.Println(err)
 			c.JSON(500, gin.H{"error": "Failed to list courts"})
 			return
 		}
@@ -57,50 +81,50 @@ func ListCourtsByCompany(uc usecase.CourtUseCase) func(*gin.Context) {
 }
 
 func ListCourtBookingsByID(uc usecase.CourtUseCase) func(*gin.Context) {
-    return func(c *gin.Context) {
-        id := c.Param("id")
-        bookings, err := uc.ListBookingsByID(c.Request.Context(), id)
-        if err != nil {
-            log.Println(err)
-            c.JSON(500, gin.H{"error": "Failed to list bookings"})
-            return
-        }
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		bookings, err := uc.ListBookingsByID(c.Request.Context(), id)
+		if err != nil {
+			log.Println(err)
+			c.JSON(500, gin.H{"error": "Failed to list bookings"})
+			return
+		}
 
-        c.JSON(200, bookings)
-    }
+		c.JSON(200, bookings)
+	}
 }
 
 func UpdateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
-    return func(c *gin.Context) {
-        id := c.Param("id")
-        var court entity.Court
-        if err := c.ShouldBindJSON(&court); err != nil {
-            log.Println(err)
-            c.JSON(400, gin.H{"error": "Invalid input"})
-            return
-        }
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		var court entity.Court
+		if err := c.ShouldBindJSON(&court); err != nil {
+			log.Println(err)
+			c.JSON(400, gin.H{"error": "Invalid input"})
+			return
+		}
 
-        err := uc.Update(c.Request.Context(), id, court)
-        if err != nil {
-            log.Println(err)
-            c.JSON(500, gin.H{"error": "Failed to update court"})
-            return
-        }
+		err := uc.Update(c.Request.Context(), id, court)
+		if err != nil {
+			log.Println(err)
+			c.JSON(500, gin.H{"error": "Failed to update court"})
+			return
+		}
 
-        c.JSON(200, gin.H{"message": "Court updated successfully"})
-    }
+		c.JSON(200, gin.H{"message": "Court updated successfully"})
+	}
 }
 
 func DeleteCourt(uc usecase.CourtUseCase) func(*gin.Context) {
-    return func(c *gin.Context) {
-        id := c.Param("id")
-        err := uc.Delete(c.Request.Context(), id)
-        if err != nil {
-            log.Println(err)
-            c.JSON(500, gin.H{"error": "Failed to delete court"})
-            return
-        }
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		err := uc.Delete(c.Request.Context(), id)
+		if err != nil {
+			log.Println(err)
+			c.JSON(500, gin.H{"error": "Failed to delete court"})
+			return
+		}
 
-        c.JSON(200, gin.H{"message": "Court deleted successfully"})
-    }
+		c.JSON(200, gin.H{"message": "Court deleted successfully"})
+	}
 }
