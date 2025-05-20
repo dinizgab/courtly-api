@@ -16,7 +16,7 @@ type (
 		FindByID(ctx context.Context, id string) (entity.Court, error)
 		ListBookingsByID(ctx context.Context, id string) ([]entity.Booking, error)
 		ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error)
-		Update(ctx context.Context, c *entity.Court) error
+		Update(ctx context.Context, id string, c entity.Court) error
 		Delete(ctx context.Context, id string) error
 	}
 
@@ -34,6 +34,8 @@ var (
 	listBookingsByIDQuery string
 	//go:embed sql/court/list_court_by_company.sql
 	listCourtByCompanyQuery string
+	//go:embed sql/court/update_court.sql
+	updateCourtQuery string
 	//go:embed sql/court/delete_court.sql
 	deleteCourtQuery string
 )
@@ -158,7 +160,24 @@ func (r *courtRepositoryImpl) ListByCompany(ctx context.Context, companyID strin
 	return courts, nil
 }
 
-func (r *courtRepositoryImpl) Update(ctx context.Context, c *entity.Court) error {
+func (r *courtRepositoryImpl) Update(ctx context.Context, id string, c entity.Court) error {
+	_, err := r.db.Exec(
+		ctx,
+		updateCourtQuery,
+		c.Name,
+		c.Description,
+		c.SportType,
+		c.HourlyPrice,
+		c.IsActive,
+		c.OpeningTime,
+		c.ClosingTime,
+		c.Capacity,
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("CourtRepository.Update: %w", err)
+	}
+
 	return nil
 }
 

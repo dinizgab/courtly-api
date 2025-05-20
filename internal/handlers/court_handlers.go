@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"mime/multipart"
 	"strings"
@@ -28,8 +27,6 @@ func CreateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
 			c.JSON(400, gin.H{"error": "Invalid input"})
 			return
 		}
-        fmt.Println("Court Info:", courtInfos)
-		fmt.Println(court)
 
 		files := form.File
 		photos := make([]*multipart.FileHeader, 0)
@@ -97,14 +94,31 @@ func ListCourtBookingsByID(uc usecase.CourtUseCase) func(*gin.Context) {
 func UpdateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
 	return func(c *gin.Context) {
 		id := c.Param("id")
+		form, err := c.MultipartForm()
+		if err != nil {
+			log.Println(err)
+			c.JSON(400, gin.H{"error": "Invalid form data"})
+			return
+		}
+
+		courtInfos := form.Value["court_info"][0]
 		var court entity.Court
-		if err := c.ShouldBindJSON(&court); err != nil {
+		if err := json.Unmarshal([]byte(courtInfos), &court); err != nil {
 			log.Println(err)
 			c.JSON(400, gin.H{"error": "Invalid input"})
 			return
 		}
 
-		err := uc.Update(c.Request.Context(), id, court)
+		// TODO - Save court photos
+		//files := form.File
+		//photos := make([]*multipart.FileHeader, 0)
+		//for i, fhArr := range files {
+		//	if strings.HasPrefix(i, "photo_") {
+		//		photos = append(photos, fhArr[0])
+		//	}
+		//}
+
+		err = uc.Update(c.Request.Context(), id, court)
 		if err != nil {
 			log.Println(err)
 			c.JSON(500, gin.H{"error": "Failed to update court"})

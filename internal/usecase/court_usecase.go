@@ -65,7 +65,7 @@ func (u *courtUseCaseImpl) ListByCompany(ctx context.Context, companyID string) 
 }
 
 func (u *courtUseCaseImpl) Update(ctx context.Context, id string, court entity.Court) error {
-	err := u.courtRepository.Update(ctx, &court)
+	err := u.courtRepository.Update(ctx, id, court)
 	if err != nil {
 		return err
 	}
