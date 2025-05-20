@@ -141,6 +141,7 @@ func (r *courtRepositoryImpl) ListByCompany(ctx context.Context, companyID strin
 			&court.SportType,
 			&court.HourlyPrice,
 			&court.IsActive,
+			&court.BookingsToday,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("CourtRepository.ListByCompany: %w", err)
