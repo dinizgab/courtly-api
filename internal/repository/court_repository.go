@@ -45,7 +45,19 @@ func NewCourtRepository(db database.Database) CourtRepository {
 }
 
 func (r *courtRepositoryImpl) Create(ctx context.Context, c *entity.Court) error {
-	_, err := r.db.Exec(ctx, createCourtQuery, c.CompanyId, c.Name, c.SportType, c.HourlyPrice, c.IsActive)
+	_, err := r.db.Exec(
+		ctx,
+		createCourtQuery,
+		c.CompanyId,
+		c.Name,
+		c.Description,
+		c.SportType,
+		c.HourlyPrice,
+		c.IsActive,
+		c.OpeningTime,
+		c.ClosingTime,
+		c.Capacity,
+	)
 	if err != nil {
 		return fmt.Errorf("CourtRepository.Create: %w", err)
 	}
@@ -59,9 +71,13 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 		&court.ID,
 		&court.CompanyId,
 		&court.Name,
-		&court.IsActive,
+		&court.Description,
 		&court.SportType,
 		&court.HourlyPrice,
+		&court.IsActive,
+		&court.OpeningTime,
+		&court.ClosingTime,
+		&court.Capacity,
 	)
 
 	if err != nil {
