@@ -11,6 +11,8 @@ type (
 	BookingUsecase interface {
 		Create(ctx context.Context, booking entity.Booking) error
 		FindByID(ctx context.Context, id string) (entity.Booking, error)
+		ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error)
+        ConfirmBooking(ctx context.Context, companyId string, bookingId string, verificationCode string) error
 		Update(ctx context.Context, booking entity.Booking) error
 		Delete(ctx context.Context, id string) error
 	}
@@ -20,6 +22,7 @@ type (
 	}
 )
 
+
 func NewBookingUsecase(bookingRepository repository.BookingRepository) BookingUsecase {
 	return &bookingUsecaseImpl{
 		bookingRepository: bookingRepository,
@@ -27,14 +30,23 @@ func NewBookingUsecase(bookingRepository repository.BookingRepository) BookingUs
 }
 
 func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking) error {
-    // TODO - Add the verification code into the booking
-    // TODO - Send email to user after create booking
+	// TODO - Add the verification code into the booking
+	// TODO - Send email to user after create booking
 	err := u.bookingRepository.Create(ctx, booking)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (u *bookingUsecaseImpl) ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error) {
+    bookings, err := u.bookingRepository.ListByCompanyID(ctx, companyId)
+    if err != nil {
+        return bookings, err
+    }
+
+    return bookings, nil
 }
 
 func (u *bookingUsecaseImpl) FindByID(ctx context.Context, id string) (entity.Booking, error) {
@@ -44,6 +56,28 @@ func (u *bookingUsecaseImpl) FindByID(ctx context.Context, id string) (entity.Bo
 	}
 
 	return booking, nil
+}
+
+func (u *bookingUsecaseImpl) ConfirmBooking(ctx context.Context, companyId string, bookingId string, verificationCode string) error {
+    booking, err := u.bookingRepository.FindByID(ctx, bookingId)
+    if err != nil {
+        return err
+    }
+
+    if booking.VerificationCode != verificationCode {
+        return entity.ErrInvalidVerificationCode
+    }
+
+    if booking.Status == entity.StatusConfirmed {
+        return entity.ErrBookingAlreadyConfirmed
+    }
+
+    err = u.bookingRepository.ConfirmBooking(ctx, companyId, bookingId)
+    if err != nil {
+        return err
+    }
+
+    return nil
 }
 
 func (u *bookingUsecaseImpl) Update(ctx context.Context, booking entity.Booking) error {

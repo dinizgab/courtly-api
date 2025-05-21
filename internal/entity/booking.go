@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type BookingStatus string
 
@@ -8,6 +11,12 @@ const (
 	StatusPending   BookingStatus = "pending"
 	StatusConfirmed BookingStatus = "confirmed"
 	StatusCancelled BookingStatus = "cancelled"
+)
+
+var (
+    ErrInvalidVerificationCode = errors.New("invalid verification code")
+    ErrBookingAlreadyConfirmed = errors.New("booking already confirmed")
+    ErrInvalidCodeFormat       = errors.New("verification code must be 6 digits")
 )
 
 type Booking struct {

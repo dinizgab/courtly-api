@@ -1,6 +1,5 @@
 SELECT
     b.id,
-    b.court_id,
     b.start_time,
     b.end_time,
     b.created_at,
@@ -8,12 +7,12 @@ SELECT
     b.guest_name,
     b.guest_phone,
     b.guest_email,
-    b.verification_code,
-    c.name AS name,
+    c.name,
     c.hourly_price
 FROM
     bookings b
 JOIN courts c
-    ON b.court_id = c.id
+    ON c.id = b.court_id
+    AND c.company_id = $1
 WHERE
-    b.id = $1;
+    b.company_id = $1

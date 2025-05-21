@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
-    _ "embed"
 
 	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/entity"
@@ -13,9 +13,11 @@ import (
 type (
 	BookingRepository interface {
 		Create(ctx context.Context, booking entity.Booking) error
-        FindByID(ctx context.Context, id string) (entity.Booking, error)
-        Update(ctx context.Context, booking entity.Booking) error
-        Delete(ctx context.Context, id string) error
+		FindByID(ctx context.Context, id string) (entity.Booking, error)
+		ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error)
+        ConfirmBooking(ctx context.Context, companyId string, bookingId string) error
+		Update(ctx context.Context, booking entity.Booking) error
+		Delete(ctx context.Context, id string) error
 	}
 
 	bookingRepositoryImpl struct {
@@ -26,12 +28,16 @@ type (
 var (
 	//go:embed sql/booking/create_booking.sql
 	createBookingQuery string
-    //go:embed sql/booking/find_booking_by_id.sql
-    findBookingByIDQuery string
-    //go:embed sql/booking/update_booking.sql
-    updateBookingQuery string
-    //go:embed sql/booking/delete_booking.sql
-    deleteBookingQuery string
+	//go:embed sql/booking/list_bookings_by_company_id.sql
+	listBookingsByCompanyIDQuery string
+	//go:embed sql/booking/find_booking_by_id.sql
+	findBookingByIDQuery string
+    //go:embed sql/booking/confirm_booking.sql
+    confirmBookingQuery string
+	//go:embed sql/booking/update_booking.sql
+	updateBookingQuery string
+	//go:embed sql/booking/delete_booking.sql
+	deleteBookingQuery string
 )
 
 func NewBookingRepository(db database.Database) BookingRepository {
@@ -60,38 +66,97 @@ func (r *bookingRepositoryImpl) Create(ctx context.Context, booking entity.Booki
 	return nil
 }
 
+func (r *bookingRepositoryImpl) ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error) {
+	bookings := make([]entity.Booking, 0)
+
+	rows, err := r.db.Query(
+		ctx,
+		listBookingsByCompanyIDQuery,
+		companyId,
+	)
+	if err != nil {
+		return bookings, err 
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var booking entity.Booking
+		var court entity.Court
+
+		err := rows.Scan(
+			&booking.ID,
+			&booking.StartTime,
+			&booking.EndTime,
+			&booking.CreatedAt,
+			&booking.Status,
+			&booking.GuestName,
+			&booking.GuestPhone,
+			&booking.GuestEmail,
+			&court.Name,
+			&court.HourlyPrice,
+		)
+		if err != nil {
+			return []entity.Booking{}, fmt.Errorf("BookingRepository.ListByCompanyID - error scanning rows: %w", err)
+		}
+
+        booking.Court = &court
+		bookings = append(bookings, booking)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("CourtRepository.ListBookingsByID - error in rows: %w", err)
+	}
+
+	return bookings, nil
+}
+
 func (r *bookingRepositoryImpl) FindByID(ctx context.Context, id string) (entity.Booking, error) {
-    var booking entity.Booking
-    err := r.db.QueryRow(ctx, findBookingByIDQuery, id).Scan(
-        &booking.ID,
-        &booking.CourtId,
-        &booking.StartTime,
-        &booking.EndTime,
-        &booking.GuestName,
-        &booking.GuestEmail,
-        &booking.GuestPhone,
-        &booking.Status,
-        &booking.VerificationCode,
-    )
+	var booking entity.Booking
+    var court entity.Court
+	err := r.db.QueryRow(ctx, findBookingByIDQuery, id).Scan(
+		&booking.ID,
+		&booking.CourtId,
+		&booking.StartTime,
+		&booking.EndTime,
+        &booking.CreatedAt,
+		&booking.Status,
+		&booking.GuestName,
+		&booking.GuestPhone,
+		&booking.GuestEmail,
+		&booking.VerificationCode,
+        &court.Name,
+        &court.HourlyPrice,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return entity.Booking{}, fmt.Errorf("BookingRepository.FindByID: booking not found")
+		}
+		return entity.Booking{}, fmt.Errorf("BookingRepository.FindByID: %w", err)
+	}
+
+    booking.Court = &court
+
+	return booking, nil
+}
+
+func (r *bookingRepositoryImpl) ConfirmBooking(ctx context.Context, companyId string, bookingId string) error {
+    _, err := r.db.Exec(ctx, confirmBookingQuery, bookingId, companyId)
     if err != nil {
-        if err == pgx.ErrNoRows {
-            return entity.Booking{}, fmt.Errorf("BookingRepository.FindByID: booking not found")
-        }
-        return entity.Booking{}, fmt.Errorf("BookingRepository.FindByID: %w", err)
+        return fmt.Errorf("BookingRepository.ConfirmBooking: %w", err)
     }
 
-    return booking, nil
+    return nil
 }
 
 func (r *bookingRepositoryImpl) Update(ctx context.Context, booking entity.Booking) error {
-    return nil
+	return nil
 }
 
 func (r *bookingRepositoryImpl) Delete(ctx context.Context, id string) error {
-    _, err := r.db.Exec(ctx, deleteBookingQuery, id)
-    if err != nil {
-        return fmt.Errorf("BookingRepository.Delete: %w", err)
-    }
+	_, err := r.db.Exec(ctx, deleteBookingQuery, id)
+	if err != nil {
+		return fmt.Errorf("BookingRepository.Delete: %w", err)
+	}
 
-    return nil
+	return nil
 }
