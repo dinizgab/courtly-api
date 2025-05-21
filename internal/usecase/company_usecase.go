@@ -2,9 +2,12 @@ package usecase
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type (
@@ -28,7 +31,14 @@ func NewCompanyUsecase(companyRepository repository.CompanyRepository) CompanyUs
 }
 
 func (u *companyUsecaseImpl) Create(ctx context.Context, company entity.Company) error {
-	err := u.companyRepository.Create(ctx, company)
+	hash, err := bcrypt.GenerateFromPassword([]byte(company.Password), 14)
+	if err != nil {
+		return fmt.Errorf("CompanyUsecase.Create - failed to hash password: %w", err)
+	}
+	company.Password = string(hash)
+	company.Slug = strings.ToLower(strings.ReplaceAll(company.Name, " ", "-"))
+
+	err = u.companyRepository.Create(ctx, company)
 	if err != nil {
 		return err
 	}
