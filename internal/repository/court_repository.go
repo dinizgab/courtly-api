@@ -135,7 +135,7 @@ func (r *courtRepositoryImpl) ListByCompany(ctx context.Context, companyID strin
 	}
 	defer rows.Close()
 
-	var courts []entity.Court
+    courts := make([]entity.Court, 0)
 	for rows.Next() {
 		var court entity.Court
 		err := rows.Scan(
