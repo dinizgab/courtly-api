@@ -51,6 +51,7 @@ func main() {
 	router.PATCH("/companies/:company_id/bookings/:booking_id/confirm", handlers.ConfirmBooking(bookingUsecase))
 
 	router.POST("/auth/signup", handlers.CreateNewCompany(companyUsecase))
+	router.POST("auth/login", handlers.LoginCompany(companyUsecase))
 
 	router.Run(fmt.Sprintf(":%s", config.API.Port))
 }

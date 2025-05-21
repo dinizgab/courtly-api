@@ -12,6 +12,7 @@ import (
 
 type (
 	CompanyUsecase interface {
+		Login(ctx context.Context, email, password string) error
 		Create(ctx context.Context, company entity.Company) error
 		FindByID(ctx context.Context, id string) (entity.Company, error)
 		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
@@ -41,6 +42,20 @@ func (u *companyUsecaseImpl) Create(ctx context.Context, company entity.Company)
 	err = u.companyRepository.Create(ctx, company)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (u *companyUsecaseImpl) Login(ctx context.Context, email, password string) error {
+	company, err := u.companyRepository.FindByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(company.Password), []byte(password))
+	if err != nil {
+		return entity.ErrInvalidCredentials
 	}
 
 	return nil

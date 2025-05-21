@@ -15,6 +15,7 @@ type (
 	CompanyRepository interface {
 		Create(ctx context.Context, company entity.Company) error
 		FindByID(ctx context.Context, id string) (entity.Company, error)
+        FindByEmail(ctx context.Context, email string) (entity.Company, error)
 		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
 		Update(ctx context.Context, company *entity.Company) error
 		Delete(ctx context.Context, id string) error
@@ -30,6 +31,8 @@ var (
 	createCompanyQuery string
 	//go:embed sql/company/find_company_by_id.sql
 	findCompanyByIDQuery string
+    //go:embed sql/company/find_company_by_email.sql
+    findCompanyByEmailQuery string
 	//go:embed sql/company/find_company_by_slug.sql
 	findCompanyBySlugQuery string
 	//go:embed sql/company/update_company.sql
@@ -81,6 +84,24 @@ func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (entity
 	}
 
 	return company, nil
+}
+
+func (r *companyRepositoryImpl) FindByEmail(ctx context.Context, email string) (entity.Company, error) {
+    var company entity.Company
+    err := r.db.QueryRow(ctx, findCompanyByEmailQuery, email).Scan(
+        &company.ID,
+        &company.Email,
+        &company.Password,
+    )
+    if err != nil {
+        if err == pgx.ErrNoRows {
+            return entity.Company{}, fmt.Errorf("CompanyRepository.FindByEmail: company not found")
+        }
+
+        return entity.Company{}, fmt.Errorf("CompanyRepository.FindByEmail: %w", err)
+    }
+
+    return company, nil
 }
 
 func (r *companyRepositoryImpl) FindBySlug(ctx context.Context, slug string) (entity.Company, error) {

@@ -1,5 +1,11 @@
 package entity
 
+import "errors"
+
+var (
+	ErrInvalidCredentials = errors.New("invalid credentials")
+)
+
 type Company struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`

@@ -23,3 +23,29 @@ func CreateNewCompany(uc usecase.CompanyUsecase) func(*gin.Context) {
 		c.JSON(201, company)
 	}
 }
+
+func LoginCompany(uc usecase.CompanyUsecase) func(*gin.Context) {
+	return func(c *gin.Context) {
+		var input struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(400, gin.H{"error": "Invalid request"})
+			return
+		}
+
+		err := uc.Login(c.Request.Context(), input.Email, input.Password)
+		if err != nil {
+			if err == entity.ErrInvalidCredentials {
+				c.JSON(401, gin.H{"error": "Invalid credentials"})
+			}
+
+
+			return
+		}
+
+		c.JSON(200, gin.H{"message": "Login successful"})
+	}
+}
