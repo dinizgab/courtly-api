@@ -24,10 +24,11 @@ func main() {
 
 	db, err := database.New(config.DB)
 	if err != nil {
-		log.Println(err)
+		log.Fatalf("Failed to connect to DB: %v", err)
 	}
 	defer db.Close()
-    authService := auth.NewAuthService([]byte(config.API.JwtSecret))
+
+	authService := auth.NewAuthService([]byte(config.API.JwtSecret))
 
 	companyRepository := repository.NewCompanyRepository(db)
 	courtRepository := repository.NewCourtRepository(db)
@@ -39,21 +40,36 @@ func main() {
 
 	router := gin.Default()
 
-	router.Use(cors.Default())
-
-	router.POST("/courts", handlers.CreateCourt(courtUsecase))
-	router.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
-	router.GET("/companies/:company_id/courts", handlers.ListCourtsByCompany(courtUsecase))
-	router.GET("/courts/:id/bookings", handlers.ListCourtBookingsByID(courtUsecase))
-	router.PUT("/courts/:id", handlers.UpdateCourt(courtUsecase))
-	router.DELETE("/courts/:id", handlers.DeleteCourt(courtUsecase))
-
-	router.GET("/companies/:company_id/bookings", handlers.ListBookingsByCompany(bookingUsecase))
-	router.GET("/bookings/:id", handlers.FindBookingByID(bookingUsecase))
-	router.PATCH("/companies/:company_id/bookings/:booking_id/confirm", handlers.ConfirmBooking(bookingUsecase))
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:3000"},
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{
+			"Origin", "Authorization", "Content-Type", "Accept", "Access-Control-Request-Headers",
+		},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	router.POST("/auth/signup", handlers.CreateNewCompany(companyUsecase))
 	router.POST("/auth/login", handlers.LoginCompany(companyUsecase))
+
+	protected := router.Group("/api")
+	protected.Use(auth.AuthMiddleware(authService))
+	{
+		protected.POST("/courts", handlers.CreateCourt(courtUsecase))
+		protected.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
+		protected.GET("/courts/:id/bookings", handlers.ListCourtBookingsByID(courtUsecase))
+		protected.PUT("/courts/:id", handlers.UpdateCourt(courtUsecase))
+		protected.DELETE("/courts/:id", handlers.DeleteCourt(courtUsecase))
+
+        protected.GET("/companies/:id", handlers.FindCompanyByID(companyUsecase))
+        protected.PUT("/companies/:id", handlers.UpdateCompanyInformations(companyUsecase))
+		protected.GET("/companies/:id/bookings", handlers.ListBookingsByCompany(bookingUsecase))
+		protected.GET("/bookings/:id", handlers.FindBookingByID(bookingUsecase))
+		protected.PATCH("/companies/:company_id/bookings/:booking_id/confirm", handlers.ConfirmBooking(bookingUsecase))
+	}
+
+	router.GET("/companies/:company_id/courts", handlers.ListCourtsByCompany(courtUsecase))
 
 	router.Run(fmt.Sprintf(":%s", config.API.Port))
 }

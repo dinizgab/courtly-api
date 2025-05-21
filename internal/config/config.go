@@ -9,7 +9,7 @@ type Config struct {
 
 type APIConfig struct {
 	Port      string
-	JwtSecret []byte 
+	JwtSecret []byte
 }
 
 type DBConfig struct {

@@ -7,6 +7,7 @@ import (
 
 type AuthService interface {
 	GenerateToken(companyID string) (string, error)
+    GetSecretKey() []byte
 }
 
 type authServiceImpl struct {
@@ -22,11 +23,15 @@ func NewAuthService(jwtSecret []byte) AuthService {
 func (s *authServiceImpl) GenerateToken(companyID string) (string, error) {
 	claims := jwt.MapClaims{
 		"company_id": companyID,
-		"iss":     "courtly-api",
+		"iss":        "courtly-api",
 		"exp":        time.Now().Add(24 * time.Hour * 7).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString(s.jwtSecret)
+}
+
+func (s *authServiceImpl) GetSecretKey() []byte {
+	return s.jwtSecret
 }
