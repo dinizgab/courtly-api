@@ -32,8 +32,8 @@ func main() {
 	bookingRepository := repository.NewBookingRepository(db)
 
 	courtUsecase := usecase.NewCourtUseCase(courtRepository)
-	_ = usecase.NewCompanyUsecase(companyRepository)
-    bookingUsecase := usecase.NewBookingUsecase(bookingRepository)
+	companyUsecase := usecase.NewCompanyUsecase(companyRepository)
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepository)
 
 	router := gin.Default()
 
@@ -47,8 +47,10 @@ func main() {
 	router.DELETE("/courts/:id", handlers.DeleteCourt(courtUsecase))
 
 	router.GET("/companies/:company_id/bookings", handlers.ListBookingsByCompany(bookingUsecase))
-    router.GET("/bookings/:id", handlers.FindBookingByID(bookingUsecase))
-    router.PATCH("/companies/:company_id/bookings/:booking_id/confirm", handlers.ConfirmBooking(bookingUsecase))
+	router.GET("/bookings/:id", handlers.FindBookingByID(bookingUsecase))
+	router.PATCH("/companies/:company_id/bookings/:booking_id/confirm", handlers.ConfirmBooking(bookingUsecase))
+
+	router.POST("/auth/signup", handlers.CreateNewCompany(companyUsecase))
 
 	router.Run(fmt.Sprintf(":%s", config.API.Port))
 }
