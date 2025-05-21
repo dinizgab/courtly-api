@@ -17,7 +17,7 @@ type (
 		Create(ctx context.Context, company entity.Company) (string, error)
 		FindByID(ctx context.Context, id string) (entity.Company, error)
 		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
-		Update(ctx context.Context, company entity.Company) error
+		Update(ctx context.Context, id string, company entity.Company) error
 		Delete(ctx context.Context, id string) error
 	}
 
@@ -93,8 +93,10 @@ func (u *companyUsecaseImpl) FindBySlug(ctx context.Context, slug string) (entit
 	return company, nil
 }
 
-func (u *companyUsecaseImpl) Update(ctx context.Context, company entity.Company) error {
-	err := u.companyRepository.Update(ctx, &company)
+func (u *companyUsecaseImpl) Update(ctx context.Context, id string, company entity.Company) error {
+    company.Slug = strings.ToLower(strings.ReplaceAll(company.Name, " ", "-"))
+
+	err := u.companyRepository.Update(ctx, id, company)
 	if err != nil {
 		return err
 	}

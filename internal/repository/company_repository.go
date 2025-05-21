@@ -17,7 +17,7 @@ type (
 		FindByID(ctx context.Context, id string) (entity.Company, error)
         FindByEmail(ctx context.Context, email string) (entity.Company, error)
 		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
-		Update(ctx context.Context, company *entity.Company) error
+		Update(ctx context.Context, id string, company entity.Company) error
 		Delete(ctx context.Context, id string) error
 	}
 
@@ -73,6 +73,7 @@ func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (entity
 		&company.Address,
 		&company.Phone,
 		&company.Email,
+        &company.CNPJ,
 		&company.Slug,
 	)
 	if err != nil {
@@ -125,9 +126,18 @@ func (r *companyRepositoryImpl) FindBySlug(ctx context.Context, slug string) (en
 	return company, nil
 }
 
-func (r *companyRepositoryImpl) Update(ctx context.Context, company *entity.Company) error {
-	// TODO - check update logic
-	_, err := r.db.Exec(ctx, updateCompanyQuery, company.Name, company.Address, company.Phone, company.Email, company.Slug, company.ID)
+func (r *companyRepositoryImpl) Update(ctx context.Context, id string, company entity.Company) error {
+	_, err := r.db.Exec(
+        ctx,
+        updateCompanyQuery,
+        company.Name,
+        company.Address,
+        company.Phone,
+        company.Email,
+        company.CNPJ,
+        company.Slug,
+        id,
+    )
 	if err != nil {
 		return fmt.Errorf("CompanyRepository.Update: %w", err)
 	}
