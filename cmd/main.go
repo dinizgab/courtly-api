@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/dinizgab/booking-mvp/internal/auth"
 	"github.com/dinizgab/booking-mvp/internal/config"
 	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/handlers"
@@ -26,13 +27,14 @@ func main() {
 		log.Println(err)
 	}
 	defer db.Close()
+    authService := auth.NewAuthService([]byte(config.API.JwtSecret))
 
 	companyRepository := repository.NewCompanyRepository(db)
 	courtRepository := repository.NewCourtRepository(db)
 	bookingRepository := repository.NewBookingRepository(db)
 
 	courtUsecase := usecase.NewCourtUseCase(courtRepository)
-	companyUsecase := usecase.NewCompanyUsecase(companyRepository)
+	companyUsecase := usecase.NewCompanyUsecase(companyRepository, authService)
 	bookingUsecase := usecase.NewBookingUsecase(bookingRepository)
 
 	router := gin.Default()
@@ -51,7 +53,7 @@ func main() {
 	router.PATCH("/companies/:company_id/bookings/:booking_id/confirm", handlers.ConfirmBooking(bookingUsecase))
 
 	router.POST("/auth/signup", handlers.CreateNewCompany(companyUsecase))
-	router.POST("auth/login", handlers.LoginCompany(companyUsecase))
+	router.POST("/auth/login", handlers.LoginCompany(companyUsecase))
 
 	router.Run(fmt.Sprintf(":%s", config.API.Port))
 }

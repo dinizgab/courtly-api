@@ -17,14 +17,18 @@ func CreateNewCompany(uc usecase.CompanyUsecase) func(*gin.Context) {
 			return
 		}
 
-		err := uc.Create(c.Request.Context(), company)
+		token, err := uc.Create(c.Request.Context(), company)
 		if err != nil {
 			log.Println(err)
 			c.JSON(500, gin.H{"error": "Failed to create company"})
 			return
 		}
 
-		c.JSON(201, company)
+		c.JSON(201, gin.H{
+            "message": "Company created successfully",
+            "token":   token,
+            "company": company,
+        })
 	}
 }
 
@@ -41,7 +45,7 @@ func LoginCompany(uc usecase.CompanyUsecase) func(*gin.Context) {
 			return
 		}
 
-		err := uc.Login(c.Request.Context(), input.Email, input.Password)
+		token, err := uc.Login(c.Request.Context(), input.Email, input.Password)
 		if err != nil {
 			log.Println(err)
 			if err == entity.ErrInvalidCredentials {
@@ -50,6 +54,9 @@ func LoginCompany(uc usecase.CompanyUsecase) func(*gin.Context) {
 			return
 		}
 
-		c.JSON(200, gin.H{"message": "Login successful"})
+		c.JSON(200, gin.H{
+			"message": "Login successful",
+			"token":   token,
+		})
 	}
 }
