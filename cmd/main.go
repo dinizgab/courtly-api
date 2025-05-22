@@ -24,8 +24,6 @@ func main() {
 		}
 	}
 
-    fmt.Println(os.Getenv("DATABASE_URL"))
-
 	config := config.New()
 	db, err := database.New(config.DB)
 	if err != nil {
