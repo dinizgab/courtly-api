@@ -16,6 +16,7 @@ type (
 		Create(ctx context.Context, court entity.Court) error
 		FindByID(ctx context.Context, id string) (entity.Court, error)
 		ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error)
+        ListCompanyCourtsShowcase(ctx context.Context, companyID string) ([]entity.Court, error)
         ListBookingsByID(ctx context.Context, id string) ([]entity.Booking, error)
 		Update(ctx context.Context, id string, court entity.Court) error
 		Delete(ctx context.Context, id string) error
@@ -62,6 +63,15 @@ func (u *courtUseCaseImpl) ListByCompany(ctx context.Context, companyID string) 
 	}
 
 	return courts, nil
+}
+
+func (u *courtUseCaseImpl) ListCompanyCourtsShowcase(ctx context.Context, companyID string) ([]entity.Court, error) {
+    courts, err := u.courtRepository.ListCompanyCourtsShowcase(ctx, companyID)
+    if err != nil {
+        return nil, err
+    }
+
+    return courts, nil
 }
 
 func (u *courtUseCaseImpl) Update(ctx context.Context, id string, court entity.Court) error {

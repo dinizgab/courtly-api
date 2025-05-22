@@ -62,7 +62,7 @@ func FindCourtByID(uc usecase.CourtUseCase) func(*gin.Context) {
 
 func ListCourtsByCompany(uc usecase.CourtUseCase) func(*gin.Context) {
 	return func(c *gin.Context) {
-		companyID := c.Param("company_id")
+		companyID := c.Param("id")
 		courts, err := uc.ListByCompany(c.Request.Context(), companyID)
 		if err != nil {
 			log.Println(err)
@@ -86,6 +86,20 @@ func ListCourtBookingsByID(uc usecase.CourtUseCase) func(*gin.Context) {
 
 		c.JSON(200, bookings)
 	}
+}
+
+func ListCompanyCourtShowcase(uc usecase.CourtUseCase) func(*gin.Context) {
+    return func(c *gin.Context) {
+        companyID := c.Param("id")
+        courts, err := uc.ListCompanyCourtsShowcase(c.Request.Context(), companyID)
+        if err != nil {
+            log.Println(err)
+            c.JSON(500, gin.H{"error": "Failed to list courts"})
+            return
+        }
+
+        c.JSON(200, courts)
+    }
 }
 
 func UpdateCourt(uc usecase.CourtUseCase) func(*gin.Context) {

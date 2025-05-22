@@ -16,6 +16,7 @@ type (
 		FindByID(ctx context.Context, id string) (entity.Court, error)
 		ListBookingsByID(ctx context.Context, id string) ([]entity.Booking, error)
 		ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error)
+		ListCompanyCourtsShowcase(ctx context.Context, companyID string) ([]entity.Court, error)
 		Update(ctx context.Context, id string, c entity.Court) error
 		Delete(ctx context.Context, id string) error
 	}
@@ -34,6 +35,8 @@ var (
 	listBookingsByIDQuery string
 	//go:embed sql/court/list_court_by_company.sql
 	listCourtByCompanyQuery string
+	//go:embed sql/court/list_company_courts_in_showcase.sql
+	listCompanyCourtsShowcaseQuery string
 	//go:embed sql/court/update_court.sql
 	updateCourtQuery string
 	//go:embed sql/court/delete_court.sql
@@ -100,7 +103,7 @@ func (r *courtRepositoryImpl) ListBookingsByID(ctx context.Context, id string) (
 	}
 	defer rows.Close()
 
-    bookings := make([]entity.Booking, 0)
+	bookings := make([]entity.Booking, 0)
 	for rows.Next() {
 		var booking entity.Booking
 		err := rows.Scan(
@@ -108,8 +111,8 @@ func (r *courtRepositoryImpl) ListBookingsByID(ctx context.Context, id string) (
 			&booking.CourtId,
 			&booking.StartTime,
 			&booking.EndTime,
-            &booking.CreatedAt,
-            &booking.Status,
+			&booking.CreatedAt,
+			&booking.Status,
 			&booking.GuestName,
 			&booking.GuestEmail,
 			&booking.GuestPhone,
@@ -135,7 +138,7 @@ func (r *courtRepositoryImpl) ListByCompany(ctx context.Context, companyID strin
 	}
 	defer rows.Close()
 
-    courts := make([]entity.Court, 0)
+	courts := make([]entity.Court, 0)
 	for rows.Next() {
 		var court entity.Court
 		err := rows.Scan(
@@ -155,6 +158,40 @@ func (r *courtRepositoryImpl) ListByCompany(ctx context.Context, companyID strin
 
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("CourtRepository.ListByCompany: %w", err)
+	}
+
+	return courts, nil
+}
+
+func (r *courtRepositoryImpl) ListCompanyCourtsShowcase(ctx context.Context, companyID string) ([]entity.Court, error) {
+	rows, err := r.db.Query(ctx, listCompanyCourtsShowcaseQuery, companyID)
+	if err != nil {
+		return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: %w", err)
+	}
+	defer rows.Close()
+
+	courts := make([]entity.Court, 0)
+	for rows.Next() {
+		var court entity.Court
+		err := rows.Scan(
+			&court.ID,
+			&court.Name,
+            &court.Description,
+			&court.SportType,
+			&court.HourlyPrice,
+			&court.IsActive,
+            &court.OpeningTime,
+            &court.ClosingTime,
+            &court.Capacity,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: %w", err)
+		}
+		courts = append(courts, court)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: %w", err)
 	}
 
 	return courts, nil

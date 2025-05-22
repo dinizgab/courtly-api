@@ -53,7 +53,7 @@ func main() {
 	router.POST("/auth/signup", handlers.CreateNewCompany(companyUsecase))
 	router.POST("/auth/login", handlers.LoginCompany(companyUsecase))
 
-	protected := router.Group("/api")
+	protected := router.Group("/admin")
 	protected.Use(auth.AuthMiddleware(authService))
 	{
 		protected.POST("/courts", handlers.CreateCourt(courtUsecase))
@@ -62,14 +62,18 @@ func main() {
 		protected.PUT("/courts/:id", handlers.UpdateCourt(courtUsecase))
 		protected.DELETE("/courts/:id", handlers.DeleteCourt(courtUsecase))
 
-        protected.GET("/companies/:id", handlers.FindCompanyByID(companyUsecase))
-        protected.PUT("/companies/:id", handlers.UpdateCompanyInformations(companyUsecase))
+		protected.GET("/companies/:id/courts", handlers.ListCourtsByCompany(courtUsecase))
+		protected.GET("/companies/:id", handlers.FindCompanyByID(companyUsecase))
+		protected.PUT("/companies/:id", handlers.UpdateCompanyInformations(companyUsecase))
 		protected.GET("/companies/:id/bookings", handlers.ListBookingsByCompany(bookingUsecase))
 		protected.GET("/bookings/:id", handlers.FindBookingByID(bookingUsecase))
 		protected.PATCH("/companies/:company_id/bookings/:booking_id/confirm", handlers.ConfirmBooking(bookingUsecase))
-	}
+    }
 
-	router.GET("/companies/:company_id/courts", handlers.ListCourtsByCompany(courtUsecase))
+    public := router.Group("/showcase")
+    {
+        public.GET("/companies/:id/courts", handlers.ListCompanyCourtShowcase(courtUsecase))
+    }
 
 	router.Run(fmt.Sprintf(":%s", config.API.Port))
 }

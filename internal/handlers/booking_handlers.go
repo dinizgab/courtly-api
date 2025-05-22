@@ -10,7 +10,7 @@ import (
 
 func ListBookingsByCompany(uc usecase.BookingUsecase) func(*gin.Context) {
 	return func(c *gin.Context) {
-		companyID := c.Param("company_id")
+		companyID := c.Param("id")
 		courts, err := uc.ListByCompanyID(c.Request.Context(), companyID)
 		if err != nil {
 			log.Println(err)
