@@ -155,30 +155,55 @@ func ListCompanyCourtShowcase(uc usecase.CourtUseCase) func(*gin.Context) {
 }
 
 func FindCourtByIDShowcase(uc usecase.CourtUseCase) func(*gin.Context) {
-    return func(c *gin.Context) {
-        id := c.Param("id")
-        court, err := uc.FindByID(c.Request.Context(), id)
-        if err != nil {
-            log.Println(err)
-            c.JSON(404, gin.H{"error": "Court not found"})
-            return
-        }
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		court, err := uc.FindByID(c.Request.Context(), id)
+		if err != nil {
+			log.Println(err)
+			c.JSON(404, gin.H{"error": "Court not found"})
+			return
+		}
 
-        c.JSON(200, court)
-    }
+		c.JSON(200, court)
+	}
 }
 
 func ListAvailableBookingSlots(uc usecase.CourtUseCase) func(*gin.Context) {
-    return func(c *gin.Context) {
-        courtID := c.Param("id")
+	return func(c *gin.Context) {
+		courtID := c.Param("id")
 		date := c.Query("date")
-        slots, err := uc.ListAvailableBookingSlots(c.Request.Context(), courtID, date)
-        if err != nil {
-            log.Println(err)
-            c.JSON(500, gin.H{"error": "Failed to list available slots"})
-            return
-        }
+		slots, err := uc.ListAvailableBookingSlots(c.Request.Context(), courtID, date)
+		if err != nil {
+			log.Println(err)
+			c.JSON(500, gin.H{"error": "Failed to list available slots"})
+			return
+		}
 
-        c.JSON(200, slots)
-    }
+		c.JSON(200, slots)
+	}
 }
+
+func CreateNewBooking(uc usecase.BookingUsecase) func(*gin.Context) {
+	return func(c *gin.Context) {
+		courtId := c.Param("id")
+
+		var booking entity.Booking
+		if err := c.ShouldBindJSON(&booking); err != nil {
+			log.Println(err)
+			c.JSON(400, gin.H{"error": "Invalid request"})
+			return
+		}
+
+		booking.CourtId = courtId
+
+		err := uc.Create(c.Request.Context(), booking)
+		if err != nil {
+			log.Println(err)
+			c.JSON(500, gin.H{"error": "Failed to create booking"})
+			return
+		}
+
+		c.JSON(201, gin.H{"message": "Booking created successfully"})
+	}
+}
+

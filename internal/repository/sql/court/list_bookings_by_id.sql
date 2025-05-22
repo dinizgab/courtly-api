@@ -14,3 +14,4 @@ FROM
     bookings
 WHERE
     court_id = $1
+    and date(start_time) = current_date

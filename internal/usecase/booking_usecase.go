@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/repository"
@@ -30,8 +31,13 @@ func NewBookingUsecase(bookingRepository repository.BookingRepository) BookingUs
 }
 
 func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking) error {
-	// TODO - Add the verification code into the booking
 	// TODO - Send email to user after create booking
+    booking.Status = entity.StatusPending
+    booking.VerificationCode = entity.GenerateVerificationCode()
+
+    fmt.Println(booking)
+    fmt.Println(booking.Court.CompanyId)
+
 	err := u.bookingRepository.Create(ctx, booking)
 	if err != nil {
 		return err

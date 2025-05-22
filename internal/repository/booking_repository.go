@@ -58,6 +58,7 @@ func (r *bookingRepositoryImpl) Create(ctx context.Context, booking entity.Booki
 		booking.GuestPhone,
 		booking.Status,
 		booking.VerificationCode,
+        booking.Court.CompanyId,
 	)
 	if err != nil {
 		return err
