@@ -56,6 +56,8 @@ func main() {
 	protected := router.Group("/admin")
 	protected.Use(auth.AuthMiddleware(authService))
 	{
+        protected.GET("/companies/:id/dashboard", handlers.GetCompanyDashboard(companyUsecase))
+
 		protected.POST("/courts", handlers.CreateCourt(courtUsecase))
 		protected.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
 		protected.GET("/courts/:id/bookings", handlers.ListCourtBookingsByID(courtUsecase))

@@ -15,6 +15,7 @@ type (
 	CompanyUsecase interface {
 		Login(ctx context.Context, email, password string) (string, error)
 		Create(ctx context.Context, company entity.Company) (string, error)
+        GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error)
 		FindByID(ctx context.Context, id string) (entity.Company, error)
 		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
 		Update(ctx context.Context, id string, company entity.Company) error
@@ -72,6 +73,15 @@ func (u *companyUsecaseImpl) Login(ctx context.Context, email, password string) 
 	}
 
 	return token, nil
+}
+
+func (u *companyUsecaseImpl) GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error) {
+    dashboard, err := u.companyRepository.GetDashboardInfo(ctx, companyId)
+    if err != nil {
+        return entity.CompanyDashboard{}, err
+    }
+
+    return dashboard, nil
 }
 
 func (u *companyUsecaseImpl) FindByID(ctx context.Context, id string) (entity.Company, error) {

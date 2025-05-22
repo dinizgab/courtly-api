@@ -17,6 +17,7 @@ type (
 		FindByID(ctx context.Context, id string) (entity.Company, error)
         FindByEmail(ctx context.Context, email string) (entity.Company, error)
 		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
+        GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error)
 		Update(ctx context.Context, id string, company entity.Company) error
 		Delete(ctx context.Context, id string) error
 	}
@@ -35,6 +36,8 @@ var (
     findCompanyByEmailQuery string
 	//go:embed sql/company/find_company_by_slug.sql
 	findCompanyBySlugQuery string
+    //go:embed sql/company/get_dashboard_info.sql
+    getDashboardInfoQuery string
 	//go:embed sql/company/update_company.sql
 	updateCompanyQuery string
 	//go:embed sql/company/delete_company.sql
@@ -124,6 +127,21 @@ func (r *companyRepositoryImpl) FindBySlug(ctx context.Context, slug string) (en
 	}
 
 	return company, nil
+}
+
+func (r *companyRepositoryImpl) GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error) {
+    var dashboard entity.CompanyDashboard
+    err := r.db.QueryRow(ctx, getDashboardInfoQuery, companyId).Scan(
+        &dashboard.TotalEarnings,
+        &dashboard.TotalBookedHours,
+        &dashboard.TotalBookings,
+        &dashboard.TotalClients,
+    )
+    if err != nil {
+        return entity.CompanyDashboard{}, fmt.Errorf("CompanyRepository.GetDashboardInfo: %w", err)
+    }
+
+    return dashboard, nil
 }
 
 func (r *companyRepositoryImpl) Update(ctx context.Context, id string, company entity.Company) error {

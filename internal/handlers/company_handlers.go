@@ -97,3 +97,17 @@ func UpdateCompanyInformations(uc usecase.CompanyUsecase) func (*gin.Context) {
         })
     }
 }
+
+func GetCompanyDashboard(uc usecase.CompanyUsecase) func(*gin.Context) {
+    return func(c *gin.Context) {
+        id := c.Param("id")
+        dashboard, err := uc.GetDashboardInfo(c.Request.Context(), id)
+        if err != nil {
+            log.Println(err)
+            c.JSON(404, gin.H{"error": "Company not found"})
+            return
+        }
+
+        c.JSON(200, dashboard)
+    }
+}
