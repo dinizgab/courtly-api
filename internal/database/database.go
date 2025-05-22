@@ -7,23 +7,24 @@ import (
 	"github.com/dinizgab/booking-mvp/internal/config"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Database interface {
 	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
 	Query(ctx context.Context, sql string, arguments ...any) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, arguments ...any) pgx.Row
-	Close() error
+	Close()
 }
 
 type databaseImpl struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
 
 func New(config *config.DBConfig) (Database, error) {
 	ctx := context.Background()
 
-	conn, err := pgx.Connect(ctx, config.DBUrl)
+	conn, err := pgxpool.New(ctx, config.DBUrl)
 	if err != nil {
 		return nil, fmt.Errorf("Database.New: %w", err)
 	}
@@ -49,6 +50,6 @@ func (d *databaseImpl) QueryRow(ctx context.Context, sql string, arguments ...an
 	return d.conn.QueryRow(ctx, sql, arguments...)
 }
 
-func (d *databaseImpl) Close() error {
-	return d.conn.Close(context.Background())
+func (d *databaseImpl) Close() {
+	d.conn.Close()
 }
