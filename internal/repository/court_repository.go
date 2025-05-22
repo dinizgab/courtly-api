@@ -17,6 +17,7 @@ type (
 		ListBookingsByID(ctx context.Context, id string) ([]entity.Booking, error)
 		ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error)
 		ListCompanyCourtsShowcase(ctx context.Context, companyID string) ([]entity.Court, error)
+		ListAvailableBookingSlots(ctx context.Context, id string, date string) ([]entity.Booking, error)
 		Update(ctx context.Context, id string, c entity.Court) error
 		Delete(ctx context.Context, id string) error
 	}
@@ -37,6 +38,8 @@ var (
 	listCourtByCompanyQuery string
 	//go:embed sql/court/list_company_courts_in_showcase.sql
 	listCompanyCourtsShowcaseQuery string
+	//go:embed sql/court/list_available_booking_slots.sql
+	listAvailableBookingSlotsQuery string
 	//go:embed sql/court/update_court.sql
 	updateCourtQuery string
 	//go:embed sql/court/delete_court.sql
@@ -195,6 +198,32 @@ func (r *courtRepositoryImpl) ListCompanyCourtsShowcase(ctx context.Context, com
 	}
 
 	return courts, nil
+}
+
+func (r *courtRepositoryImpl) ListAvailableBookingSlots(ctx context.Context, id string, date string) ([]entity.Booking, error) {
+	rows, err := r.db.Query(ctx, listAvailableBookingSlotsQuery, id, date)
+	if err != nil {
+		return nil, fmt.Errorf("CourtRepository.ListAvailableBookingSlots: %w", err)
+	}
+	defer rows.Close()
+
+	bookings := make([]entity.Booking, 0)
+	for rows.Next() {
+		var booking entity.Booking
+		err := rows.Scan(
+			&booking.StartTime,
+			&booking.EndTime,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("CourtRepository.ListAvailableBookingSlots: %w", err)
+		}
+		bookings = append(bookings, booking)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("CourtRepository.ListAvailableBookingSlots: %w", err)
+	}
+
+	return bookings, nil
 }
 
 func (r *courtRepositoryImpl) Update(ctx context.Context, id string, c entity.Court) error {

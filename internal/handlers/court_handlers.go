@@ -167,3 +167,18 @@ func FindCourtByIDShowcase(uc usecase.CourtUseCase) func(*gin.Context) {
         c.JSON(200, court)
     }
 }
+
+func ListAvailableBookingSlots(uc usecase.CourtUseCase) func(*gin.Context) {
+    return func(c *gin.Context) {
+        courtID := c.Param("id")
+		date := c.Query("date")
+        slots, err := uc.ListAvailableBookingSlots(c.Request.Context(), courtID, date)
+        if err != nil {
+            log.Println(err)
+            c.JSON(500, gin.H{"error": "Failed to list available slots"})
+            return
+        }
+
+        c.JSON(200, slots)
+    }
+}

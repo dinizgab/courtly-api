@@ -18,6 +18,7 @@ type (
 		ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error)
         ListCompanyCourtsShowcase(ctx context.Context, companyID string) ([]entity.Court, error)
         ListBookingsByID(ctx context.Context, id string) ([]entity.Booking, error)
+		ListAvailableBookingSlots(ctx context.Context, id string, date string) ([]entity.Booking, error)
 		Update(ctx context.Context, id string, court entity.Court) error
 		Delete(ctx context.Context, id string) error
 	}
@@ -72,6 +73,15 @@ func (u *courtUseCaseImpl) ListCompanyCourtsShowcase(ctx context.Context, compan
     }
 
     return courts, nil
+}
+
+func (u *courtUseCaseImpl) ListAvailableBookingSlots(ctx context.Context, id string, date string) ([]entity.Booking, error) {
+	bookings, err := u.courtRepository.ListAvailableBookingSlots(ctx, id, date)
+	if err != nil {
+		return nil, err
+	}
+
+	return bookings, nil
 }
 
 func (u *courtUseCaseImpl) Update(ctx context.Context, id string, court entity.Court) error {

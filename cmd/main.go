@@ -74,6 +74,7 @@ func main() {
     {
         public.GET("/companies/:id/courts", handlers.ListCompanyCourtShowcase(courtUsecase))
         public.GET("/courts/:id", handlers.FindCourtByIDShowcase(courtUsecase))
+		public.GET("/courts/:id/available-slots", handlers.ListAvailableBookingSlots(courtUsecase))
     }
 
 	router.Run(fmt.Sprintf(":%s", config.API.Port))
