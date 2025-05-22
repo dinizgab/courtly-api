@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/dinizgab/booking-mvp/internal/auth"
 	"github.com/dinizgab/booking-mvp/internal/config"
@@ -16,12 +17,14 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading env file: %v", err)
+	if os.Getenv("RAILWAY_ENVIRONMENT_NAME") != "production" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatalf("Error loading env file: %v", err)
+		}
 	}
-	config := config.New()
 
+	config := config.New()
 	db, err := database.New(config.DB)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %v", err)
@@ -56,7 +59,7 @@ func main() {
 	protected := router.Group("/admin")
 	protected.Use(auth.AuthMiddleware(authService))
 	{
-        protected.GET("/companies/:id/dashboard", handlers.GetCompanyDashboard(companyUsecase))
+		protected.GET("/companies/:id/dashboard", handlers.GetCompanyDashboard(companyUsecase))
 
 		protected.POST("/courts", handlers.CreateCourt(courtUsecase))
 		protected.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
@@ -70,16 +73,16 @@ func main() {
 		protected.GET("/companies/:id/bookings", handlers.ListBookingsByCompany(bookingUsecase))
 		protected.GET("/bookings/:id", handlers.FindBookingByID(bookingUsecase))
 		protected.PATCH("/companies/:company_id/bookings/:booking_id/confirm", handlers.ConfirmBooking(bookingUsecase))
-    }
+	}
 
-    public := router.Group("/showcase")
-    {
-        public.GET("/companies/:id/courts", handlers.ListCompanyCourtShowcase(courtUsecase))
-        public.GET("/courts/:id", handlers.FindCourtByIDShowcase(courtUsecase))
-        public.GET("/courts/:id/available-slots", handlers.ListAvailableBookingSlots(courtUsecase))
-        public.GET("/bookings", handlers.FindBookingByIDShowcase(bookingUsecase))
-        public.POST("/courts/:id/bookings", handlers.CreateNewBooking(bookingUsecase))
-    }
+	public := router.Group("/showcase")
+	{
+		public.GET("/companies/:id/courts", handlers.ListCompanyCourtShowcase(courtUsecase))
+		public.GET("/courts/:id", handlers.FindCourtByIDShowcase(courtUsecase))
+		public.GET("/courts/:id/available-slots", handlers.ListAvailableBookingSlots(courtUsecase))
+		public.GET("/bookings", handlers.FindBookingByIDShowcase(bookingUsecase))
+		public.POST("/courts/:id/bookings", handlers.CreateNewBooking(bookingUsecase))
+	}
 
 	router.Run(fmt.Sprintf(":%s", config.API.Port))
 }
