@@ -2,6 +2,7 @@ package entity
 
 import (
 	"errors"
+	"math/rand/v2"
 	"time"
 )
 
@@ -14,9 +15,9 @@ const (
 )
 
 var (
-    ErrInvalidVerificationCode = errors.New("invalid verification code")
-    ErrBookingAlreadyConfirmed = errors.New("booking already confirmed")
-    ErrInvalidCodeFormat       = errors.New("verification code must be 6 digits")
+	ErrInvalidVerificationCode = errors.New("invalid verification code")
+	ErrBookingAlreadyConfirmed = errors.New("booking already confirmed")
+	ErrInvalidCodeFormat       = errors.New("verification code must be 6 digits")
 )
 
 type Booking struct {
@@ -30,5 +31,16 @@ type Booking struct {
 	GuestPhone       string        `json:"guest_phone"`
 	GuestEmail       string        `json:"guest_email"`
 	VerificationCode string        `json:"verification_code"`
-	Court            *Court         `json:"court,omitempty"`
+	Court            *Court        `json:"court,omitempty"`
+}
+
+func GenerateVerificationCode() string {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	code := make([]byte, 6)
+
+	for i := 0; i < 6; i++ {
+		code[i] = charset[rand.IntN(len(charset))]
+	}
+
+	return string(code)
 }
