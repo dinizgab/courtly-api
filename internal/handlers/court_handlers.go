@@ -196,14 +196,14 @@ func CreateNewBooking(uc usecase.BookingUsecase) func(*gin.Context) {
 
 		booking.CourtId = courtId
 
-		err := uc.Create(c.Request.Context(), booking)
+		id, err := uc.Create(c.Request.Context(), booking)
 		if err != nil {
 			log.Println(err)
 			c.JSON(500, gin.H{"error": "Failed to create booking"})
 			return
 		}
 
-		c.JSON(201, gin.H{"message": "Booking created successfully"})
+        c.JSON(201, gin.H{"message": "Booking created successfully", "id": id})
 	}
 }
 

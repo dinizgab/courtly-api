@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/repository"
@@ -10,7 +9,7 @@ import (
 
 type (
 	BookingUsecase interface {
-		Create(ctx context.Context, booking entity.Booking) error
+		Create(ctx context.Context, booking entity.Booking) (string, error) 
 		FindByID(ctx context.Context, id string) (entity.Booking, error)
 		ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error)
         ConfirmBooking(ctx context.Context, companyId string, bookingId string, verificationCode string) error
@@ -30,20 +29,17 @@ func NewBookingUsecase(bookingRepository repository.BookingRepository) BookingUs
 	}
 }
 
-func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking) error {
+func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking) (string, error) {
 	// TODO - Send email to user after create booking
     booking.Status = entity.StatusPending
     booking.VerificationCode = entity.GenerateVerificationCode()
 
-    fmt.Println(booking)
-    fmt.Println(booking.Court.CompanyId)
-
-	err := u.bookingRepository.Create(ctx, booking)
+	id, err := u.bookingRepository.Create(ctx, booking)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return id, nil
 }
 
 func (u *bookingUsecaseImpl) ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error) {

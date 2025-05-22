@@ -12,7 +12,7 @@ import (
 
 type (
 	BookingRepository interface {
-		Create(ctx context.Context, booking entity.Booking) error
+		Create(ctx context.Context, booking entity.Booking) (string, error) 
 		FindByID(ctx context.Context, id string) (entity.Booking, error)
 		ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error)
         ConfirmBooking(ctx context.Context, companyId string, bookingId string) error
@@ -46,8 +46,8 @@ func NewBookingRepository(db database.Database) BookingRepository {
 	}
 }
 
-func (r *bookingRepositoryImpl) Create(ctx context.Context, booking entity.Booking) error {
-	_, err := r.db.Exec(
+func (r *bookingRepositoryImpl) Create(ctx context.Context, booking entity.Booking) (string, error) {
+	row := r.db.QueryRow(
 		ctx,
 		createBookingQuery,
 		booking.CourtId,
@@ -60,11 +60,15 @@ func (r *bookingRepositoryImpl) Create(ctx context.Context, booking entity.Booki
 		booking.VerificationCode,
         booking.Court.CompanyId,
 	)
+
+    var id string
+
+    err := row.Scan(&id)
 	if err != nil {
-		return err
+        return "", fmt.Errorf("BookingRepository.Create - error scanning row: %w", err)
 	}
 
-	return nil
+	return id, nil
 }
 
 func (r *bookingRepositoryImpl) ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error) {
