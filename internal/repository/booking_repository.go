@@ -14,6 +14,7 @@ type (
 	BookingRepository interface {
 		Create(ctx context.Context, booking entity.Booking) (string, error) 
 		FindByID(ctx context.Context, id string) (entity.Booking, error)
+        FindByIDShowcase(ctx context.Context, id string) (entity.Booking, error)
 		ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error)
         ConfirmBooking(ctx context.Context, companyId string, bookingId string) error
 		Update(ctx context.Context, booking entity.Booking) error
@@ -32,6 +33,8 @@ var (
 	listBookingsByCompanyIDQuery string
 	//go:embed sql/booking/find_booking_by_id.sql
 	findBookingByIDQuery string
+    //go:embed sql/booking/find_booking_by_id_in_showcase.sql
+    findBookingByIDShowcaseQuery string
     //go:embed sql/booking/confirm_booking.sql
     confirmBookingQuery string
 	//go:embed sql/booking/update_booking.sql
@@ -142,6 +145,33 @@ func (r *bookingRepositoryImpl) FindByID(ctx context.Context, id string) (entity
     booking.Court = &court
 
 	return booking, nil
+}
+
+func (r *bookingRepositoryImpl) FindByIDShowcase(ctx context.Context, id string) (entity.Booking, error) {
+    var booking entity.Booking
+    var court entity.Court
+    var company entity.Company
+
+    err := r.db.QueryRow(ctx, findBookingByIDShowcaseQuery, id).Scan(
+        &booking.StartTime,
+        &booking.EndTime,
+        &court.Name,
+        &court.HourlyPrice,
+        &company.Address,
+    )
+    if err != nil {
+        if err == pgx.ErrNoRows {
+            return entity.Booking{}, fmt.Errorf("BookingRepository.FindByID: booking not found")
+        }
+        return entity.Booking{}, fmt.Errorf("BookingRepository.FindByID: %w", err)
+    }
+
+    court.Company = &company
+    booking.Court = &court
+
+    fmt.Println(booking)
+
+    return booking, nil
 }
 
 func (r *bookingRepositoryImpl) ConfirmBooking(ctx context.Context, companyId string, bookingId string) error {

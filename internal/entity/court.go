@@ -15,4 +15,5 @@ type Court struct {
 	ClosingTime   time.Time `json:"closing_time"`
 	BookingsToday int       `json:"bookings_today"`
 	Bookings      []Booking `json:"bookings"`
+    Company       *Company  `json:"company,omitempty"`
 }

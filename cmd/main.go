@@ -75,6 +75,7 @@ func main() {
         public.GET("/companies/:id/courts", handlers.ListCompanyCourtShowcase(courtUsecase))
         public.GET("/courts/:id", handlers.FindCourtByIDShowcase(courtUsecase))
         public.GET("/courts/:id/available-slots", handlers.ListAvailableBookingSlots(courtUsecase))
+        public.GET("/bookings", handlers.FindBookingByIDShowcase(bookingUsecase))
         public.POST("/courts/:id/bookings", handlers.CreateNewBooking(bookingUsecase))
     }
 

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
@@ -67,3 +68,18 @@ func FindBookingByID(uc usecase.BookingUsecase) func(*gin.Context) {
     }
 }
 
+func FindBookingByIDShowcase(uc usecase.BookingUsecase) func(*gin.Context) {
+    return func(c *gin.Context) {
+        bookingID := c.Query("id")
+        fmt.Println(bookingID)
+
+        booking, err := uc.FindByIDShowcase(c.Request.Context(), bookingID)
+        if err != nil {
+            log.Println(err)
+            c.JSON(500, gin.H{"error": "Failed to find booking"})
+            return
+        }
+
+        c.JSON(200, booking)
+    }
+}   

@@ -11,6 +11,7 @@ type (
 	BookingUsecase interface {
 		Create(ctx context.Context, booking entity.Booking) (string, error) 
 		FindByID(ctx context.Context, id string) (entity.Booking, error)
+        FindByIDShowcase(ctx context.Context, id string) (entity.Booking, error)
 		ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error)
         ConfirmBooking(ctx context.Context, companyId string, bookingId string, verificationCode string) error
 		Update(ctx context.Context, booking entity.Booking) error
@@ -58,6 +59,15 @@ func (u *bookingUsecaseImpl) FindByID(ctx context.Context, id string) (entity.Bo
 	}
 
 	return booking, nil
+}
+
+func (u *bookingUsecaseImpl) FindByIDShowcase(ctx context.Context, id string) (entity.Booking, error) {
+    booking, err := u.bookingRepository.FindByIDShowcase(ctx, id)
+    if err != nil {
+        return entity.Booking{}, err
+    }
+
+    return booking, nil
 }
 
 func (u *bookingUsecaseImpl) ConfirmBooking(ctx context.Context, companyId string, bookingId string, verificationCode string) error {
