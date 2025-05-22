@@ -61,6 +61,7 @@ func (r *bookingRepositoryImpl) Create(ctx context.Context, booking entity.Booki
 		booking.GuestPhone,
 		booking.Status,
 		booking.VerificationCode,
+        booking.TotalPrice,
         booking.Court.CompanyId,
 	)
 
@@ -101,7 +102,6 @@ func (r *bookingRepositoryImpl) ListByCompanyID(ctx context.Context, companyId s
 			&booking.GuestPhone,
 			&booking.GuestEmail,
 			&court.Name,
-			&court.HourlyPrice,
 		)
 		if err != nil {
 			return []entity.Booking{}, fmt.Errorf("BookingRepository.ListByCompanyID - error scanning rows: %w", err)
@@ -132,8 +132,8 @@ func (r *bookingRepositoryImpl) FindByID(ctx context.Context, id string) (entity
 		&booking.GuestPhone,
 		&booking.GuestEmail,
 		&booking.VerificationCode,
+        &booking.TotalPrice,
         &court.Name,
-        &court.HourlyPrice,
 	)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -155,8 +155,8 @@ func (r *bookingRepositoryImpl) FindByIDShowcase(ctx context.Context, id string)
     err := r.db.QueryRow(ctx, findBookingByIDShowcaseQuery, id).Scan(
         &booking.StartTime,
         &booking.EndTime,
+        &booking.TotalPrice,
         &court.Name,
-        &court.HourlyPrice,
         &company.Address,
     )
     if err != nil {
@@ -168,8 +168,6 @@ func (r *bookingRepositoryImpl) FindByIDShowcase(ctx context.Context, id string)
 
     court.Company = &company
     booking.Court = &court
-
-    fmt.Println(booking)
 
     return booking, nil
 }

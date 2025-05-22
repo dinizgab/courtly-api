@@ -31,6 +31,7 @@ type Booking struct {
 	GuestPhone       string        `json:"guest_phone"`
 	GuestEmail       string        `json:"guest_email"`
 	VerificationCode string        `json:"verification_code"`
+    TotalPrice      float64       `json:"total_price"`
 	Court            *Court        `json:"court,omitempty"`
 }
 

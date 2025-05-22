@@ -1,8 +1,8 @@
 SELECT
     b.start_time,
     b.end_time,
+    b.total_price,
     c.name,
-    c.hourly_price,
     co.address
 FROM
     bookings b

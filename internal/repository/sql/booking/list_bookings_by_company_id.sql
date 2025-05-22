@@ -7,8 +7,7 @@ SELECT
     b.guest_name,
     b.guest_phone,
     b.guest_email,
-    c.name,
-    c.hourly_price
+    c.name
 FROM
     bookings b
 JOIN courts c

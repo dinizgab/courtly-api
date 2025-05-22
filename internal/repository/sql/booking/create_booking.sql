@@ -7,6 +7,7 @@ INSERT INTO bookings(
     guest_phone,
     status,
     verification_code,
+    total_price,
     company_id
 )
 VALUES(
@@ -18,6 +19,7 @@ $5,
 $6,
 $7,
 $8,
-$9
+$9,
+$10
 )
 RETURNING id

@@ -9,8 +9,8 @@ SELECT
     b.guest_phone,
     b.guest_email,
     b.verification_code,
+    b.total_price,
     c.name AS name,
-    c.hourly_price
 FROM
     bookings b
 JOIN courts c
