@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmação de Reserva - QuadrasFácil</title>
+  <style>
+    /* Reset styles for email clients */
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333333;
+      background-color: #f5f5f5;
+    }
+    
+    /* Container styles */
+    .email-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+    }
+    
+    /* Header styles */
+    .header {
+      background-color: #16a34a; /* green-600 */
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .logo {
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    
+    /* Content styles */
+    .content {
+      padding: 30px;
+    }
+    
+    .greeting {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .message {
+      margin-bottom: 25px;
+    }
+    
+    /* Verification code styles */
+    .verification-container {
+      background-color: #f0fdf4; /* green-50 */
+      border: 1px solid #dcfce7; /* green-100 */
+      border-radius: 8px;
+      padding: 20px;
+      margin: 25px 0;
+      text-align: center;
+    }
+    
+    .verification-title {
+      font-size: 16px;
+      color: #16a34a; /* green-600 */
+      margin-bottom: 10px;
+    }
+    
+    .verification-code {
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      color: #16a34a; /* green-600 */
+      padding: 10px;
+      background-color: white;
+      border-radius: 4px;
+      display: inline-block;
+      margin: 10px 0;
+    }
+    
+    .verification-instructions {
+      font-size: 14px;
+      color: #4b5563; /* gray-600 */
+      margin-top: 10px;
+    }
+    
+    /* Booking details styles */
+    .booking-details {
+      background-color: #f9fafb; /* gray-50 */
+      border-radius: 8px;
+      padding: 20px;
+      margin: 25px 0;
+    }
+    
+    .booking-details-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #111827; /* gray-900 */
+    }
+    
+    .booking-detail-row {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    
+    .booking-detail-label {
+      width: 40%;
+      font-weight: 600;
+      color: #4b5563; /* gray-600 */
+    }
+    
+    .booking-detail-value {
+      width: 60%;
+      color: #111827; /* gray-900 */
+    }
+    
+    /* CTA button styles */
+    .cta-button {
+      display: block;
+      background-color: #16a34a; /* green-600 */
+      color: white;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: bold;
+      text-align: center;
+      margin: 30px auto;
+      width: 200px;
+    }
+    
+    /* Footer styles */
+    .footer {
+      background-color: #f9fafb; /* gray-50 */
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #6b7280; /* gray-500 */
+      border-top: 1px solid #e5e7eb; /* gray-200 */
+    }
+    
+    .social-links {
+      margin: 15px 0;
+    }
+    
+    .social-link {
+      display: inline-block;
+      margin: 0 10px;
+      color: #16a34a; /* green-600 */
+      text-decoration: none;
+    }
+    
+    .footer-text {
+      margin: 10px 0;
+    }
+    
+    /* Responsive styles */
+    @media screen and (max-width: 600px) {
+      .booking-detail-row {
+        flex-direction: column;
+      }
+      
+      .booking-detail-label,
+      .booking-detail-value {
+        width: 100%;
+      }
+      
+      .booking-detail-label {
+        margin-bottom: 5px;
+      }
+      
+      .verification-code {
+        font-size: 28px;
+        letter-spacing: 3px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <div class="logo">Courtly</div>
+    </div>
+    
+    <div class="content">
+      <div class="greeting">Olá, {{.GuestName}}!</div>
+      
+      <div class="message">
+        Sua reserva foi confirmada com sucesso. Abaixo estão os detalhes da sua reserva e o código de verificação que você deverá apresentar ao chegar no local.
+      </div>
+      
+      <div class="verification-container">
+        <div class="verification-title">Seu código de verificação</div>
+        <div class="verification-code">{{.VerificationCode}}</div>
+        <div class="verification-instructions">
+          Apresente este código na recepção ao chegar para sua reserva.
+        </div>
+      </div>
+      
+      <div class="booking-details">
+        <div class="booking-details-title">Detalhes da Reserva</div>
+        
+        <div class="booking-detail-row">
+          <div class="booking-detail-label">Quadra:</div>
+          <div class="booking-detail-value">{{.CourtName}}</div>
+        </div>
+        
+        <div class="booking-detail-row">
+          <div class="booking-detail-label">Data:</div>
+          <div class="booking-detail-value">{{.BookingDate}}</div>
+        </div>
+        
+        <div class="booking-detail-row">
+          <div class="booking-detail-label">Horário:</div>
+          <div class="booking-detail-value">{{.BookingInterval}}</div>
+        </div>
+        
+        <div class="booking-detail-row">
+          <div class="booking-detail-label">Valor:</div>
+          <div class="booking-detail-value">R$ {{.TotalPrice}}</div>
+        </div>
+        
+        <div class="booking-detail-row">
+          <div class="booking-detail-label">Endereço:</div>
+          <div class="booking-detail-value">{{.CourtAddress}}</div>
+        </div>
+      </div>
+      
+      <div class="message">
+        <strong>Instruções importantes:</strong>
+        <ul>
+          <li>Chegue com 15 minutos de antecedência</li>
+          <li>O pagamento será realizado no local</li>
+          <li>Traga seu próprio equipamento ou verifique a disponibilidade de aluguel no local</li>
+        </ul>
+      </div>
+     
+      <div class="message">
+        Agradecemos pela sua reserva! Se tiver alguma dúvida, entre em contato conosco.
+      </div>
+    </div>
+    
+    <div class="footer">
+      <div class="social-links">
+        <a href="#" class="social-link">Facebook</a>
+        <a href="#" class="social-link">Instagram</a>
+        <a href="#" class="social-link">Twitter</a>
+      </div>
+      
+      <div class="footer-text">
+        © 2025 QuadrasFácil. Todos os direitos reservados.
+      </div>
+      
+      <div class="footer-text">
+        Rua das Quadras, 123 - Centro, São Paulo - SP, 01234-567
+      </div>
+      
+      <div class="footer-text">
+        <a href="mailto:contato@quadrasfacil.com" style="color: #16a34a; text-decoration: none;">
+          contato@quadrasfacil.com
+        </a>
+        |
+        <a href="tel:+551199999999" style="color: #16a34a; text-decoration: none;">
+          (11) 9999-9999
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

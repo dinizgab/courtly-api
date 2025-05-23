@@ -10,6 +10,7 @@ import (
 	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/handlers"
 	"github.com/dinizgab/booking-mvp/internal/repository"
+	"github.com/dinizgab/booking-mvp/internal/services/notification"
 	"github.com/dinizgab/booking-mvp/internal/usecase"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,11 @@ func main() {
 		}
 	}
 
-	config := config.New()
+	config, err := config.New()
+	if err != nil {
+		log.Fatalf("Error loading config: %v", err)
+	}
+
 	db, err := database.New(config.DB)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %v", err)
@@ -32,6 +37,12 @@ func main() {
 	defer db.Close()
 
 	authService := auth.NewAuthService([]byte(config.API.JwtSecret))
+	emailRenderer, err := notification.NewHTMLRender(nil)
+	if err != nil {
+		log.Fatalf("Failed to create email renderer: %v", err)
+	}
+
+	emailService := notification.NewEmailSender(emailRenderer, config.SMTP)
 
 	companyRepository := repository.NewCompanyRepository(db)
 	courtRepository := repository.NewCourtRepository(db)
@@ -39,12 +50,12 @@ func main() {
 
 	courtUsecase := usecase.NewCourtUseCase(courtRepository)
 	companyUsecase := usecase.NewCompanyUsecase(companyRepository, authService)
-	bookingUsecase := usecase.NewBookingUsecase(bookingRepository)
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepository, companyUsecase, courtUsecase, emailService)
 
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-        AllowOrigins: []string{"http://localhost:3000", "https://courtly-red.vercel.app"},
+		AllowOrigins: []string{"http://localhost:3000", "https://courtly-red.vercel.app"},
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{
 			"Origin", "Authorization", "Content-Type", "Accept", "Access-Control-Request-Headers",
