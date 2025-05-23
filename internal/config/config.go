@@ -1,10 +1,15 @@
 package config
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"strconv"
+)
 
 type Config struct {
-	API *APIConfig
-	DB  *DBConfig
+	API  *APIConfig
+	DB   *DBConfig
+	SMTP *SMTPConfig
 }
 
 type APIConfig struct {
@@ -16,7 +21,20 @@ type DBConfig struct {
 	DBUrl string
 }
 
-func New() *Config {
+type SMTPConfig struct {
+	Email string
+	Host  string
+	Port  int
+	User  string
+	Pass  string
+}
+
+func New() (*Config, error) {
+	smtpPort, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
+	if err != nil {
+		return nil, fmt.Errorf("config.New - invalid SMTP_PORT: %w", err)
+	}
+
 	return &Config{
 		API: &APIConfig{
 			Port:      os.Getenv("API_PORT"),
@@ -25,5 +43,12 @@ func New() *Config {
 		DB: &DBConfig{
 			DBUrl: os.Getenv("DATABASE_URL"),
 		},
-	}
+		SMTP: &SMTPConfig{
+			Email: os.Getenv("SMTP_EMAIL"),
+			Host:  os.Getenv("SMTP_HOST"),
+			Port:  smtpPort,
+			User:  os.Getenv("SMTP_USER"),
+			Pass:  os.Getenv("SMTP_PASS"),
+		},
+	}, nil
 }
