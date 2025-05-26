@@ -86,7 +86,7 @@ func main() {
 		protected.GET("/companies/:id/courts", handlers.ListCourtsByCompany(courtUsecase))
 		protected.GET("/companies/:id", handlers.FindCompanyByID(companyUsecase))
 		protected.PUT("/companies/:id", handlers.UpdateCompanyInformations(companyUsecase))
-		protected.GET("/companies/:id/bookings", handlers.ListBookingsByCompany(bookingUsecase))
+		protected.GET("/bookings", handlers.ListBookingsByCompany(bookingUsecase))
 		protected.GET("/bookings/:id", handlers.FindBookingByID(bookingUsecase))
 		protected.PATCH("/companies/:company_id/bookings/:booking_id/confirm", handlers.ConfirmBooking(bookingUsecase))
 	}
