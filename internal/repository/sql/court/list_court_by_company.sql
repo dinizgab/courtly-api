@@ -5,7 +5,7 @@ SELECT
     c.sport_type,
     c.hourly_price,
     c.is_active,
-    b.bookings_today
+    coalesce(b.bookings_today, 0) as bookings_today
 FROM courts c
 LEFT JOIN  (
     select court_id, count(*) as bookings_today

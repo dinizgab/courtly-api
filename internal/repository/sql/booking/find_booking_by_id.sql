@@ -10,7 +10,7 @@ SELECT
     b.guest_email,
     b.verification_code,
     b.total_price,
-    c.name AS name,
+    c.name AS name
 FROM
     bookings b
 JOIN courts c
