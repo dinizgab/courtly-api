@@ -88,6 +88,7 @@ func main() {
 		protected.PUT("/companies/:id", handlers.UpdateCompanyInformations(companyUsecase))
 		protected.GET("/bookings", handlers.ListBookingsByCompany(bookingUsecase))
 		protected.GET("/bookings/:id", handlers.FindBookingByID(bookingUsecase))
+		// TODO - (refactor) change this route name
 		protected.PATCH("/companies/:company_id/bookings/:booking_id/confirm", handlers.ConfirmBooking(bookingUsecase))
 	}
 
