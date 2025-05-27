@@ -8,6 +8,7 @@ import (
 	"github.com/dinizgab/booking-mvp/internal/auth"
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/repository"
+	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -59,6 +60,10 @@ func (u *companyUsecaseImpl) Create(ctx context.Context, company entity.Company)
 func (u *companyUsecaseImpl) Login(ctx context.Context, email, password string) (string, error) {
 	company, err := u.companyRepository.FindByEmail(ctx, email)
 	if err != nil {
+        if err == pgx.ErrNoRows {
+            return "", entity.ErrInvalidCredentials
+        }
+
 		return "", err
 	}
 
