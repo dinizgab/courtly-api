@@ -47,6 +47,17 @@ type Booking struct {
 	Court            *Court        `json:"court,omitempty"`
 }
 
+func (b Booking) DurationInHours() float64 {
+    if b.EndTime.IsZero() || b.StartTime.IsZero() {
+        return 0
+    }
+    duration := b.EndTime.Sub(b.StartTime).Hours()
+    if duration < 0 {
+        return 0
+    }
+    return duration
+}
+
 func GenerateVerificationCode() string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	code := make([]byte, 6)

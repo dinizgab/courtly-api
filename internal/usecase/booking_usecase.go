@@ -46,17 +46,19 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 	booking.Status = entity.StatusPending
 	booking.VerificationCode = entity.GenerateVerificationCode()
 
-	id, err := u.bookingRepository.Create(ctx, booking)
-	if err != nil {
-		return "", err
-	}
-
     court, err := u.courtUsecase.FindByID(ctx, booking.CourtId)
     if err != nil {
         return "", err
     }
 
 	company, err := u.companyUsecase.FindByID(ctx, court.CompanyId)
+	if err != nil {
+		return "", err
+	}
+
+    booking.TotalPrice = court.HourlyPrice * booking.DurationInHours()
+
+	id, err := u.bookingRepository.Create(ctx, booking)
 	if err != nil {
 		return "", err
 	}
