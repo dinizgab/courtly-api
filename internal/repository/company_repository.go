@@ -13,7 +13,7 @@ import (
 
 type (
 	CompanyRepository interface {
-		Create(ctx context.Context, company entity.Company) error
+		Create(ctx context.Context, company entity.Company) (entity.Company, error)
 		FindByID(ctx context.Context, id string) (entity.Company, error)
         FindByEmail(ctx context.Context, email string) (entity.Company, error)
 		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
@@ -50,8 +50,8 @@ func NewCompanyRepository(db database.Database) CompanyRepository {
 	}
 }
 
-func (r *companyRepositoryImpl) Create(ctx context.Context, company entity.Company) error {
-	_, err := r.db.Exec(ctx,
+func (r *companyRepositoryImpl) Create(ctx context.Context, company entity.Company) (entity.Company, error) {
+	err := r.db.QueryRow(ctx,
 		createCompanyQuery,
 		company.Name,
 		company.Address,
@@ -60,12 +60,12 @@ func (r *companyRepositoryImpl) Create(ctx context.Context, company entity.Compa
 		company.Password,
 		company.CNPJ,
 		company.Slug,
-	)
+	).Scan(&company.ID)
 	if err != nil {
-		return fmt.Errorf("CompanyRepository.Create - error creating company: %w", err)
+		return company, fmt.Errorf("CompanyRepository.Create - error creating company: %w", err)
 	}
 
-	return nil
+	return company, nil
 }
 
 func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (entity.Company, error) {
@@ -99,7 +99,7 @@ func (r *companyRepositoryImpl) FindByEmail(ctx context.Context, email string) (
     )
     if err != nil {
         if err == pgx.ErrNoRows {
-            return entity.Company{}, fmt.Errorf("CompanyRepository.FindByEmail: company not found")
+            return entity.Company{}, err
         }
 
         return entity.Company{}, fmt.Errorf("CompanyRepository.FindByEmail: %w", err)
