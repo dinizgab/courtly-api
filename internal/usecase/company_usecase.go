@@ -16,7 +16,7 @@ type (
 	CompanyUsecase interface {
 		Login(ctx context.Context, email, password string) (string, error)
 		Create(ctx context.Context, company entity.Company) (string, error)
-        GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error)
+		GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error)
 		FindByID(ctx context.Context, id string) (entity.Company, error)
 		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
 		Update(ctx context.Context, id string, company entity.Company) error
@@ -26,25 +26,38 @@ type (
 	companyUsecaseImpl struct {
 		companyRepository repository.CompanyRepository
 		authService       auth.AuthService
+		paymentUsecase    PaymentUsecase
 	}
 )
 
-func NewCompanyUsecase(companyRepository repository.CompanyRepository, authService auth.AuthService) CompanyUsecase {
+func NewCompanyUsecase(
+	companyRepository repository.CompanyRepository,
+	authService auth.AuthService,
+	paymentUsecase PaymentUsecase,
+) CompanyUsecase {
 	return &companyUsecaseImpl{
 		companyRepository: companyRepository,
 		authService:       authService,
+		paymentUsecase:    paymentUsecase,
 	}
 }
 
+// TODO - Make this function atomic (create company and subaccount in one transaction)
 func (u *companyUsecaseImpl) Create(ctx context.Context, company entity.Company) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(company.Password), 14)
 	if err != nil {
 		return "", fmt.Errorf("CompanyUsecase.Create - failed to hash password: %w", err)
 	}
+
 	company.Password = string(hash)
 	company.Slug = strings.ToLower(strings.ReplaceAll(company.Name, " ", "-"))
 
-	err = u.companyRepository.Create(ctx, company)
+	company, err = u.companyRepository.Create(ctx, company)
+	if err != nil {
+		return "", err
+	}
+
+	err = u.paymentUsecase.CreateSubaccount(ctx, company)
 	if err != nil {
 		return "", err
 	}
@@ -60,9 +73,9 @@ func (u *companyUsecaseImpl) Create(ctx context.Context, company entity.Company)
 func (u *companyUsecaseImpl) Login(ctx context.Context, email, password string) (string, error) {
 	company, err := u.companyRepository.FindByEmail(ctx, email)
 	if err != nil {
-        if err == pgx.ErrNoRows {
-            return "", entity.ErrInvalidCredentials
-        }
+		if err == pgx.ErrNoRows {
+			return "", entity.ErrInvalidCredentials
+		}
 
 		return "", err
 	}
@@ -81,12 +94,12 @@ func (u *companyUsecaseImpl) Login(ctx context.Context, email, password string) 
 }
 
 func (u *companyUsecaseImpl) GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error) {
-    dashboard, err := u.companyRepository.GetDashboardInfo(ctx, companyId)
-    if err != nil {
-        return entity.CompanyDashboard{}, err
-    }
+	dashboard, err := u.companyRepository.GetDashboardInfo(ctx, companyId)
+	if err != nil {
+		return entity.CompanyDashboard{}, err
+	}
 
-    return dashboard, nil
+	return dashboard, nil
 }
 
 func (u *companyUsecaseImpl) FindByID(ctx context.Context, id string) (entity.Company, error) {
@@ -109,7 +122,7 @@ func (u *companyUsecaseImpl) FindBySlug(ctx context.Context, slug string) (entit
 }
 
 func (u *companyUsecaseImpl) Update(ctx context.Context, id string, company entity.Company) error {
-    company.Slug = strings.ToLower(strings.ReplaceAll(company.Name, " ", "-"))
+	company.Slug = strings.ToLower(strings.ReplaceAll(company.Name, " ", "-"))
 
 	err := u.companyRepository.Update(ctx, id, company)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 	"github.com/dinizgab/booking-mvp/internal/auth"
 	"github.com/dinizgab/booking-mvp/internal/config"
 	"github.com/dinizgab/booking-mvp/internal/database"
+	"github.com/dinizgab/booking-mvp/internal/gateway/openpix"
 	"github.com/dinizgab/booking-mvp/internal/handlers"
 	"github.com/dinizgab/booking-mvp/internal/repository"
 	"github.com/dinizgab/booking-mvp/internal/services/notification"
@@ -47,14 +48,17 @@ func main() {
 		log.Fatalf("Failed to create email renderer: %v", err)
 	}
 
+    pixGatewayClient := openpix.NewOpenPixClient(config.OpenPix)
 	emailService := notification.NewEmailSender(emailRenderer, config.SMTP)
 
 	companyRepository := repository.NewCompanyRepository(db)
 	courtRepository := repository.NewCourtRepository(db)
 	bookingRepository := repository.NewBookingRepository(db)
+    paymentRepository := repository.NewPaymentRepository(db)
 
+    pixPaymentUsecase := usecase.NewPixGatewayService(pixGatewayClient, paymentRepository)
 	courtUsecase := usecase.NewCourtUseCase(courtRepository)
-	companyUsecase := usecase.NewCompanyUsecase(companyRepository, authService)
+	companyUsecase := usecase.NewCompanyUsecase(companyRepository, authService, pixPaymentUsecase)
 	bookingUsecase := usecase.NewBookingUsecase(bookingRepository, companyUsecase, courtUsecase, emailService)
 
 	router := gin.Default()

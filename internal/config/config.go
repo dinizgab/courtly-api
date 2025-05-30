@@ -10,6 +10,7 @@ type Config struct {
 	API  *APIConfig
 	DB   *DBConfig
 	SMTP *SMTPConfig
+    OpenPix *OpenPixConfig
 }
 
 type APIConfig struct {
@@ -27,6 +28,12 @@ type SMTPConfig struct {
 	Port  int
 	User  string
 	Pass  string
+}
+
+type OpenPixConfig struct {
+    BaseURL string
+    AppID   string
+    Timeout int
 }
 
 func New() (*Config, error) {
@@ -50,5 +57,9 @@ func New() (*Config, error) {
 			User:  os.Getenv("SMTP_USER"),
 			Pass:  os.Getenv("SMTP_PASS"),
 		},
+        OpenPix: &OpenPixConfig{
+            BaseURL: os.Getenv("OPENPIX_BASE_URL"),
+            AppID:   os.Getenv("OPENPIX_APP_ID"),
+        },
 	}, nil
 }
