@@ -1,6 +1,5 @@
 -- +goose Up
 -- +goose StatementBegin
-SELECT 'up SQL query';
 ALTER TABLE courts ADD COLUMN description TEXT NOT NULL DEFAULT '';
 ALTER TABLE courts ADD COLUMN opening_time TIME NOT NULL DEFAULT '08:00:00';
 ALTER TABLE courts ADD COLUMN closing_time TIME NOT NULL DEFAULT '22:00:00';
