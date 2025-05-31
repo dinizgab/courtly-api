@@ -22,22 +22,25 @@ type (
 
 	bookingUsecaseImpl struct {
 		bookingRepository   repository.BookingRepository
+		paymentUsecase      PaymentUsecase
 		companyUsecase      CompanyUsecase
-        courtUsecase        CourtUseCase
+		courtUsecase        CourtUseCase
 		notificationService notification.Sender
 	}
 )
 
 func NewBookingUsecase(
 	bookingRepository repository.BookingRepository,
+	paymentUsecase PaymentUsecase,
 	companyUsecase CompanyUsecase,
-    courtUsecase CourtUseCase,
+	courtUsecase CourtUseCase,
 	notificationService notification.Sender,
 ) BookingUsecase {
 	return &bookingUsecaseImpl{
 		bookingRepository:   bookingRepository,
+		paymentUsecase:      paymentUsecase,
 		companyUsecase:      companyUsecase,
-        courtUsecase:        courtUsecase,
+		courtUsecase:        courtUsecase,
 		notificationService: notificationService,
 	}
 }
@@ -46,19 +49,26 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 	booking.Status = entity.StatusPending
 	booking.VerificationCode = entity.GenerateVerificationCode()
 
-    court, err := u.courtUsecase.FindByID(ctx, booking.CourtId)
-    if err != nil {
-        return "", err
-    }
+	court, err := u.courtUsecase.FindByID(ctx, booking.CourtId)
+	if err != nil {
+		return "", err
+	}
 
 	company, err := u.companyUsecase.FindByID(ctx, court.CompanyId)
 	if err != nil {
 		return "", err
 	}
 
-    booking.TotalPrice = court.HourlyPrice * booking.DurationInHours()
+	booking.TotalPrice = court.HourlyPrice * booking.DurationInHours()
 
 	id, err := u.bookingRepository.Create(ctx, booking)
+	if err != nil {
+		return "", err
+	}
+
+	booking.ID = id
+
+	err = u.paymentUsecase.CreateCharge(ctx, court.CompanyId, booking)
 	if err != nil {
 		return "", err
 	}
@@ -69,20 +79,20 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 		GuestEmail:       booking.GuestEmail,
 		CourtName:        court.Name,
 		CourtAddress:     company.Address,
-        BookingDate:      booking.StartTime.Format("02-12-2006"),
+		BookingDate:      booking.StartTime.Format("02-12-2006"),
 		BookingInterval:  fmt.Sprintf("%s - %s", booking.StartTime.Format("15:04"), booking.EndTime.Format("15:04")),
 		TotalPrice:       booking.TotalPrice,
 		VerificationCode: booking.VerificationCode,
 	}
-   
-    errCh := make(chan error, 1)
-    go func() {
-        errCh <- u.notificationService.Send(ctx, bookingEmailInfo)
-    }()
 
-    if err = <- errCh; err != nil {
-        return "", err
-    }
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- u.notificationService.Send(ctx, bookingEmailInfo)
+	}()
+
+	if err = <-errCh; err != nil {
+		return "", err
+	}
 
 	return id, nil
 }
