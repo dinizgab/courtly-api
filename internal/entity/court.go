@@ -8,6 +8,7 @@ type Court struct {
 	Name          string    `json:"name"`
 	IsActive      bool      `json:"is_active"`
 	SportType     string    `json:"sport_type"`
+    // TODO - Change to int64 for cents
 	HourlyPrice   float64   `json:"hourly_price"`
 	Description   string    `json:"description"`
 	Capacity      int       `json:"capacity"`

@@ -48,18 +48,18 @@ func main() {
 		log.Fatalf("Failed to create email renderer: %v", err)
 	}
 
-    pixGatewayClient := openpix.NewOpenPixClient(config.OpenPix)
+	pixGatewayClient := openpix.NewOpenPixClient(config.OpenPix)
 	emailService := notification.NewEmailSender(emailRenderer, config.SMTP)
 
 	companyRepository := repository.NewCompanyRepository(db)
 	courtRepository := repository.NewCourtRepository(db)
 	bookingRepository := repository.NewBookingRepository(db)
-    paymentRepository := repository.NewPaymentRepository(db)
+	paymentRepository := repository.NewPaymentRepository(db)
 
-    pixPaymentUsecase := usecase.NewPixGatewayService(pixGatewayClient, paymentRepository)
+	pixPaymentUsecase := usecase.NewPixGatewayService(pixGatewayClient, paymentRepository)
 	courtUsecase := usecase.NewCourtUseCase(courtRepository)
 	companyUsecase := usecase.NewCompanyUsecase(companyRepository, authService, pixPaymentUsecase)
-	bookingUsecase := usecase.NewBookingUsecase(bookingRepository, companyUsecase, courtUsecase, emailService)
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepository, pixPaymentUsecase, companyUsecase, courtUsecase, emailService)
 
 	router := gin.Default()
 
