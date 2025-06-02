@@ -23,7 +23,7 @@ type CreateChargeRequest struct {
 }
 
 type CreateChargeResponse struct {
-    Charge Charge `json:"charge"`
+	Charge Charge `json:"charge"`
 }
 
 type Charge struct {
@@ -33,7 +33,7 @@ type Charge struct {
 	PaymentLinkID  string `json:"paymentLinkID"`
 	PaymentLinkURL string `json:"paymentLinkUrl"`
 	QrCodeImage    string `json:"qrCodeImage"`
-	ExpiresIn      int64  `json:"expiresIn"`
+	ExpiresDate    string `json:"expiresDate"`
 	Brcode         string `json:"brCode"`
 	CreatedAt      string `json:"createdAt"`
 	UpdatedAt      string `json:"updatedAt"`

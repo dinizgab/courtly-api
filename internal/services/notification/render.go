@@ -37,7 +37,6 @@ func NewHTMLRender(fsys fs.FS) (Renderer, error) {
 }
 
 func (r *htmlRendererImpl) Render(booking entity.BookingConfirmationDTO) (string, error) {
-    fmt.Println("Rendering email template with booking details:", booking)
 	var buf bytes.Buffer
 	if err := r.tpl.Execute(&buf, booking); err != nil {
 		return "", fmt.Errorf("Renderer.Render - failed to execute template: %w", err)

@@ -71,7 +71,6 @@ func FindBookingByID(uc usecase.BookingUsecase) func(*gin.Context) {
 func FindBookingByIDShowcase(uc usecase.BookingUsecase) func(*gin.Context) {
     return func(c *gin.Context) {
         bookingID := c.Query("id")
-        fmt.Println(bookingID)
 
         booking, err := uc.FindByIDShowcase(c.Request.Context(), bookingID)
         if err != nil {
