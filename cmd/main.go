@@ -14,6 +14,7 @@ import (
 	"github.com/dinizgab/booking-mvp/internal/config"
 	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/gateway/openpix"
+	"github.com/dinizgab/booking-mvp/internal/gateway/openpix/webhooks"
 	"github.com/dinizgab/booking-mvp/internal/handlers"
 	"github.com/dinizgab/booking-mvp/internal/repository"
 	"github.com/dinizgab/booking-mvp/internal/services/notification"
@@ -75,7 +76,7 @@ func main() {
 
 	router.POST("/auth/signup", handlers.CreateNewCompany(companyUsecase))
 	router.POST("/auth/login", handlers.LoginCompany(companyUsecase))
-    router.POST("/payment/pix/confirmation", openpix.ConfirmPaymentWebhook())
+    router.POST("/payment/pix/confirmation", webhooks.ConfirmPaymentWebhook(pixPaymentUsecase))
 
 	protected := router.Group("/admin")
 	protected.Use(auth.AuthMiddleware(authService))

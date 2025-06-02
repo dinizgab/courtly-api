@@ -18,12 +18,15 @@ var (
 	getSubaccountPixKeyByCompanyIDQuery string
 	//go:embed sql/payment/create_charge.sql
 	createChargeQuery string
+    //go:embed sql/payment/confirm_booking_payment.sql
+    confirmPaymentQuery string
 )
 
 type PaymentRepository interface {
 	CreateSubaccount(ctx context.Context, subaccount entity.Subaccount) error
 	GetSubaccountPixKeyByCompanyID(ctx context.Context, companyId string) (string, error)
 	CreateCharge(ctx context.Context, companyId string, charge openpix.Charge) error
+    ConfirmPayment(ctx context.Context, charge openpix.Charge) error
 }
 
 type paymentRepositoryImpl struct {
@@ -74,4 +77,18 @@ func (r *paymentRepositoryImpl) CreateCharge(ctx context.Context, companyId stri
 	}
 
 	return nil
+}
+
+func (r *paymentRepositoryImpl) ConfirmPayment(ctx context.Context, charge openpix.Charge) error {
+    _, err := r.db.Exec(
+        ctx,
+        confirmPaymentQuery,
+        charge.CorrelationID,
+        charge.PaidAt,
+    )
+    if err != nil {
+        return fmt.Errorf("paymentRepositoryImpl.ConfirmPayment - failed to confirm payment: %w", err)
+    }
+
+    return nil
 }

@@ -11,6 +11,7 @@ import (
 type PaymentUsecase interface {
 	CreateSubaccount(ctx context.Context, company entity.Company) error
 	CreateCharge(ctx context.Context, companyId string, booking entity.Booking) error
+    ConfirmPayment(ctx context.Context, charge openpix.Charge) error
 }
 
 type pixGatewayUsecaseImpl struct {
@@ -64,4 +65,13 @@ func (uc *pixGatewayUsecaseImpl) CreateCharge(ctx context.Context, companyId str
     }
 
 	return nil
+}
+
+func (uc *pixGatewayUsecaseImpl) ConfirmPayment(ctx context.Context, charge openpix.Charge) error {
+    err := uc.repo.ConfirmPayment(ctx, charge)
+    if err != nil {
+        return err
+    }
+
+    return nil
 }
