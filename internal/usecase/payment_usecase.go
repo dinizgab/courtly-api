@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/gateway/openpix"
@@ -59,9 +58,10 @@ func (uc *pixGatewayUsecaseImpl) CreateCharge(ctx context.Context, companyId str
 		return err
 	}
 
-    // TODO - Save the charge in the repository
-
-    fmt.Printf("Charge created successfully: %+v\n", charge)
+    err = uc.repo.CreateCharge(ctx, companyId, charge)
+    if err != nil {
+        return err
+    }
 
 	return nil
 }
