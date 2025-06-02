@@ -35,6 +35,15 @@ type Charge struct {
 	QrCodeImage    string `json:"qrCodeImage"`
 	ExpiresDate    string `json:"expiresDate"`
 	Brcode         string `json:"brCode"`
+	PaidAt         string `json:"paidAt"`
 	CreatedAt      string `json:"createdAt"`
 	UpdatedAt      string `json:"updatedAt"`
+
+	// TODO - Add Payer information to payment
+	//Payer Payer `json:"payer"`
+}
+
+type ChargeConfirmedResponse struct {
+	WebhookEvent  string `json:"event"`
+	Charge Charge `json:"charge"`
 }
