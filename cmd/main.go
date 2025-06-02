@@ -75,6 +75,7 @@ func main() {
 
 	router.POST("/auth/signup", handlers.CreateNewCompany(companyUsecase))
 	router.POST("/auth/login", handlers.LoginCompany(companyUsecase))
+    router.POST("/payment/pix/confirmation", openpix.ConfirmPaymentWebhook())
 
 	protected := router.Group("/admin")
 	protected.Use(auth.AuthMiddleware(authService))

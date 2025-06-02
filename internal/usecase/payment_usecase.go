@@ -59,6 +59,8 @@ func (uc *pixGatewayUsecaseImpl) CreateCharge(ctx context.Context, companyId str
 		return err
 	}
 
+    // TODO - Save the charge in the repository
+
     fmt.Printf("Charge created successfully: %+v\n", charge)
 
 	return nil
