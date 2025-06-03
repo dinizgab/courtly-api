@@ -73,6 +73,8 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 		return "", err
 	}
 
+    // TODO - Send email just after payment is confirmed
+    // This should be transferred to the payment usecase ConfirmPayment method
 	bookingEmailInfo := entity.BookingConfirmationDTO{
 		GuestName:        booking.GuestName,
 		GuestPhone:       booking.GuestPhone,

@@ -9,6 +9,7 @@ import (
 	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/gateway/openpix"
+	"github.com/jackc/pgx/v5"
 )
 
 var (
@@ -20,6 +21,8 @@ var (
 	createChargeQuery string
     //go:embed sql/payment/confirm_booking_payment.sql
     confirmPaymentQuery string
+    //go:embed sql/payment/get_booking_payment_status_by_id.sql
+    getBookingPaymentStatusByIDQuery string
 )
 
 type PaymentRepository interface {
@@ -27,6 +30,7 @@ type PaymentRepository interface {
 	GetSubaccountPixKeyByCompanyID(ctx context.Context, companyId string) (string, error)
 	CreateCharge(ctx context.Context, companyId string, charge openpix.Charge) error
     ConfirmPayment(ctx context.Context, charge openpix.Charge) error
+    GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error)
 }
 
 type paymentRepositoryImpl struct {
@@ -91,4 +95,17 @@ func (r *paymentRepositoryImpl) ConfirmPayment(ctx context.Context, charge openp
     }
 
     return nil
+}
+
+func (r *paymentRepositoryImpl) GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error) {
+    var status string
+    err := r.db.QueryRow(ctx, getBookingPaymentStatusByIDQuery, id).Scan(&status)
+    if err != nil {
+        if err == pgx.ErrNoRows {
+            return "", fmt.Errorf("paymentRepositoryImpl.GetBookingPaymentStatusByID - booking payment not found: %w", err)
+        }
+        return "", fmt.Errorf("paymentRepositoryImpl.GetBookingPaymentStatusByID - failed to get booking payment status: %w", err)
+    }
+
+    return status, nil
 }

@@ -80,4 +80,5 @@ func FindBookingByIDShowcase(uc usecase.BookingUsecase) func(*gin.Context) {
 
         c.JSON(200, booking)
     }
-}   
+}
+

@@ -12,6 +12,7 @@ type PaymentUsecase interface {
 	CreateSubaccount(ctx context.Context, company entity.Company) error
 	CreateCharge(ctx context.Context, companyId string, booking entity.Booking) error
     ConfirmPayment(ctx context.Context, charge openpix.Charge) error
+    GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error)
 }
 
 type pixGatewayUsecaseImpl struct {
@@ -74,4 +75,13 @@ func (uc *pixGatewayUsecaseImpl) ConfirmPayment(ctx context.Context, charge open
     }
 
     return nil
+}
+
+func (uc *pixGatewayUsecaseImpl) GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error) {
+    status, err := uc.repo.GetBookingPaymentStatusByID(ctx, id)
+    if err != nil {
+        return "", err
+    }
+
+    return status, nil
 }

@@ -105,6 +105,7 @@ func main() {
 		public.GET("/courts/:id/available-slots", handlers.ListAvailableBookingSlots(courtUsecase))
 		public.GET("/bookings", handlers.FindBookingByIDShowcase(bookingUsecase))
 		public.POST("/courts/:id/bookings", handlers.CreateNewBooking(bookingUsecase))
+        public.GET("/bookings/status", handlers.GetBookingPaymentStatus(pixPaymentUsecase))
 	}
 
 	srv := &http.Server{
