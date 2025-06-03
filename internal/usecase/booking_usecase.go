@@ -66,6 +66,9 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 		return "", err
 	}
 
+    fmt.Println("Booking created with ID:", id)
+    fmt.Println("Booking:", booking)
+
 	booking.ID = id
 
 	err = u.paymentUsecase.CreateCharge(ctx, court.CompanyId, booking)
