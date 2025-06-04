@@ -13,7 +13,7 @@ import (
 )
 
 type OpenPixClient interface {
-	CreateSubaccount(ctx context.Context, in CreateSubAccountRequest) (Subaccount, error)
+	CreateSubaccount(ctx context.Context, subaccount Subaccount) (Subaccount, error)
 	CreateCharge(ctx context.Context, subaccountKey string, booking entity.Booking) (Charge, error)
     GetCompanyBalance(ctx context.Context, pixKey string) (int64, error)
 }
@@ -32,9 +32,8 @@ func NewOpenPixClient(cfg *config.OpenPixConfig) OpenPixClient {
 	}
 }
 
-// TODO - Change parameters to receive a Subaccount entity
-func (c *openPixClientImpl) CreateSubaccount(ctx context.Context, in CreateSubAccountRequest) (Subaccount, error) {
-	body, err := json.Marshal(in)
+func (c *openPixClientImpl) CreateSubaccount(ctx context.Context, subaccount Subaccount) (Subaccount, error) {
+	body, err := json.Marshal(subaccount)
 	if err != nil {
 		return Subaccount{}, fmt.Errorf("OpenPixClient.CreateSubaccount - failed to marshal request: %w", err)
 	}
