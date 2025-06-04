@@ -66,9 +66,6 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 		return "", err
 	}
 
-    fmt.Println("Booking created with ID:", id)
-    fmt.Println("Booking:", booking)
-
 	booking.ID = id
 
 	err = u.paymentUsecase.CreateCharge(ctx, court.CompanyId, booking)
@@ -76,8 +73,8 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 		return "", err
 	}
 
-    // TODO - Send email just after payment is confirmed
-    // This should be transferred to the payment usecase ConfirmPayment method
+	// TODO - Send email just after payment is confirmed
+	// This should be transferred to the payment usecase ConfirmPayment method
 	bookingEmailInfo := entity.BookingConfirmationDTO{
 		GuestName:        booking.GuestName,
 		GuestPhone:       booking.GuestPhone,
