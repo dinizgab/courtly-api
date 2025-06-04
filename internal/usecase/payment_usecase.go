@@ -13,7 +13,7 @@ type PaymentUsecase interface {
 	CreateCharge(ctx context.Context, companyId string, booking entity.Booking) error
     ConfirmPayment(ctx context.Context, charge openpix.Charge) error
     GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error)
-	GetTotalToWithdraw(ctx context.Context, slug string) (float64, error)
+	GetCompanyBalance(ctx context.Context, id string) (int64, error)
 }
 
 type pixGatewayUsecaseImpl struct {
@@ -87,6 +87,16 @@ func (uc *pixGatewayUsecaseImpl) GetBookingPaymentStatusByID(ctx context.Context
     return status, nil
 }
 
-func (uc *pixGatewayUsecaseImpl) GetTotalToWithdraw(ctx context.Context, slug string) (float64, error) {
-	return 0, nil
+func (uc *pixGatewayUsecaseImpl) GetCompanyBalance(ctx context.Context, id string) (int64, error) {
+    pixKey, err := uc.repo.GetSubaccountPixKeyByCompanyID(ctx, id)
+    if err != nil {
+        return 0, err
+    }
+
+    total, err := uc.pixClient.GetCompanyBalance(ctx, pixKey)
+    if err != nil {
+        return 0, err
+    }
+
+	return total, nil
 }

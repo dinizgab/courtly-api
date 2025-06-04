@@ -82,6 +82,7 @@ func main() {
 	protected.Use(auth.AuthMiddleware(authService))
 	{
 		protected.GET("/companies/:id/dashboard", handlers.GetCompanyDashboard(companyUsecase))
+        protected.GET("/companies/:id/balance", handlers.GetCompanyBalance(pixPaymentUsecase))
 
 		protected.POST("/courts", handlers.CreateCourt(courtUsecase))
 		protected.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))

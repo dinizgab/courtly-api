@@ -112,10 +112,10 @@ func GetCompanyDashboard(uc usecase.CompanyUsecase) func(*gin.Context) {
     }
 }
 
-func GetCompanyTotalToWithdraw(uc usecase.PaymentUsecase) func(*gin.Context) {
+func GetCompanyBalance(uc usecase.PaymentUsecase) func(*gin.Context) {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		total, err := uc.GetTotalToWithdraw(c.Request.Context(), id)
+		total, err := uc.GetCompanyBalance(c.Request.Context(), id)
 		if err != nil {
 			log.Println(err)
 			c.JSON(500, gin.H{"error": "Failed to retrieve total to withdraw"})
@@ -123,7 +123,7 @@ func GetCompanyTotalToWithdraw(uc usecase.PaymentUsecase) func(*gin.Context) {
 		}
 
 		c.JSON(200, gin.H{
-			"total_to_withdraw": total,
+			"balance": total,
 		})
 	}
 }

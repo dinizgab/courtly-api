@@ -11,6 +11,6 @@ type CreateSubAccountRequest struct {
 	PixKey string `json:"pixKey"`
 }
 
-type CreateSubAccountResponse struct {
+type SubAccountResponse struct {
 	Subaccount Subaccount `json:"SubAccount"`
 }

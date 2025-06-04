@@ -15,6 +15,7 @@ import (
 type OpenPixClient interface {
 	CreateSubaccount(ctx context.Context, in CreateSubAccountRequest) (Subaccount, error)
 	CreateCharge(ctx context.Context, subaccountKey string, booking entity.Booking) (Charge, error)
+    GetCompanyBalance(ctx context.Context, pixKey string) (int64, error)
 }
 
 type openPixClientImpl struct {
@@ -57,7 +58,7 @@ func (c *openPixClientImpl) CreateSubaccount(ctx context.Context, in CreateSubAc
 		return Subaccount{}, fmt.Errorf("OpenPixClient.CreateSubaccount - failed to create subaccount with status: %s", res.Status)
 	}
 
-	var out CreateSubAccountResponse
+	var out SubAccountResponse
 	err = json.NewDecoder(res.Body).Decode(&out)
 	if err != nil {
 		return Subaccount{}, fmt.Errorf("OpenPixClient.CreateSubaccount - failed to decode response: %w", err)
@@ -112,4 +113,33 @@ func (c *openPixClientImpl) CreateCharge(ctx context.Context, subaccountKey stri
 	}
 
 	return out.Charge, nil
+}
+
+func (c *openPixClientImpl) GetCompanyBalance(ctx context.Context, pixKey string) (int64, error) {
+    url := fmt.Sprintf("%s/api/v1/subaccount/%s", c.baseURL, pixKey)
+    req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+    if err != nil {
+        return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to create request: %w", err)
+    }
+
+	req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("Authorization", c.appId)
+
+    res, err := c.httpClient.Do(req)
+    if err != nil {
+        return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to send request: %w", err)
+    }
+    defer res.Body.Close()
+
+    if res.StatusCode != http.StatusOK {
+        return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to get balance with status: %s", res.Status)
+    }
+
+    var out SubAccountResponse
+    err = json.NewDecoder(res.Body).Decode(&out)
+    if err != nil {
+        return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to decode response: %w", err)
+    }
+
+    return out.Subaccount.Balance, nil
 }
