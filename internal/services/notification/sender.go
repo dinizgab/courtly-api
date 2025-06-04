@@ -8,10 +8,10 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-const emailSubject = "Confirmação da reserva"
+const emailSubject = "Confirmação de reserva"
 
 type Sender interface {
-	Send(ctx context.Context, subject entity.BookingConfirmationDTO) error
+	Send(ctx context.Context, subject entity.BookingConfirmationInfo) error
 }
 
 type emailSender struct {
@@ -26,7 +26,7 @@ func NewEmailSender(renderer Renderer, config *config.SMTPConfig) Sender {
 	}
 }
 
-func (s *emailSender) Send(ctx context.Context, info entity.BookingConfirmationDTO) error {
+func (s *emailSender) Send(ctx context.Context, info entity.BookingConfirmationInfo) error {
 	body, err := s.Renderer.Render(info)
 	if err != nil {
 		return err

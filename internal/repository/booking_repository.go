@@ -7,11 +7,14 @@ import (
 
 	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/entity"
+	"github.com/dinizgab/booking-mvp/internal/ports"
 	"github.com/jackc/pgx/v5"
 )
 
 type (
 	BookingRepository interface {
+        ports.BookingSummaryReader
+
 		Create(ctx context.Context, booking entity.Booking) (string, error) 
 		FindByID(ctx context.Context, id string) (entity.Booking, error)
         FindByIDShowcase(ctx context.Context, id string) (entity.Booking, error)
@@ -41,6 +44,8 @@ var (
 	updateBookingQuery string
 	//go:embed sql/booking/delete_booking.sql
 	deleteBookingQuery string
+    //go:embed sql/booking/get_booking_confirmation_info.sql
+    getBookingConfirmationInfoQuery string
 )
 
 func NewBookingRepository(db database.Database) BookingRepository {
@@ -193,3 +198,30 @@ func (r *bookingRepositoryImpl) Delete(ctx context.Context, id string) error {
 
 	return nil
 }
+
+func (r *bookingRepositoryImpl) GetBookingSummary(ctx context.Context, bookingId string) (entity.Booking, error) {
+    var booking entity.Booking
+    var court entity.Court
+    var company entity.Company
+
+    err := r.db.QueryRow(ctx, getBookingConfirmationInfoQuery, bookingId).Scan(
+        &booking.GuestName,
+        &booking.GuestPhone,
+        &booking.GuestEmail,
+        &court.Name,
+        &company.Address,
+        &booking.StartTime,
+        &booking.EndTime,
+        &booking.TotalPrice,
+        &booking.VerificationCode,
+    )
+    if err != nil {
+        return entity.Booking{}, fmt.Errorf("BookingRepository.GetBookingConfirmationInfo: %w", err)
+    }
+
+    court.Company = &company
+    booking.Court = &court
+
+    return booking, nil
+}
+

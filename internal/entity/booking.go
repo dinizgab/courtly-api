@@ -20,7 +20,7 @@ var (
 	ErrInvalidCodeFormat       = errors.New("verification code must be 6 digits")
 )
 
-type BookingConfirmationDTO struct {
+type BookingConfirmationInfo struct {
 	GuestName        string  `json:"guest_name"`
 	GuestPhone       string  `json:"guest_phone"`
 	GuestEmail       string  `json:"guest_email"`

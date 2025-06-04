@@ -57,10 +57,10 @@ func main() {
 	bookingRepository := repository.NewBookingRepository(db)
 	paymentRepository := repository.NewPaymentRepository(db)
 
-	pixPaymentUsecase := usecase.NewPixGatewayService(pixGatewayClient, paymentRepository)
+	pixPaymentUsecase := usecase.NewPixGatewayService(pixGatewayClient, bookingRepository, paymentRepository, emailService)
 	courtUsecase := usecase.NewCourtUseCase(courtRepository)
 	companyUsecase := usecase.NewCompanyUsecase(companyRepository, authService, pixPaymentUsecase)
-	bookingUsecase := usecase.NewBookingUsecase(bookingRepository, pixPaymentUsecase, companyUsecase, courtUsecase, emailService)
+	bookingUsecase := usecase.NewBookingUsecase(bookingRepository, pixPaymentUsecase, companyUsecase, courtUsecase)
 
 	router := gin.Default()
 
@@ -76,13 +76,13 @@ func main() {
 
 	router.POST("/auth/signup", handlers.CreateNewCompany(companyUsecase))
 	router.POST("/auth/login", handlers.LoginCompany(companyUsecase))
-    router.POST("/payment/pix/confirmation", webhooks.ConfirmPaymentWebhook(pixPaymentUsecase))
+	router.POST("/payment/pix/confirmation", webhooks.ConfirmPaymentWebhook(pixPaymentUsecase))
 
 	protected := router.Group("/admin")
 	protected.Use(auth.AuthMiddleware(authService))
 	{
 		protected.GET("/companies/:id/dashboard", handlers.GetCompanyDashboard(companyUsecase))
-        protected.GET("/companies/:id/balance", handlers.GetCompanyBalance(pixPaymentUsecase))
+		protected.GET("/companies/:id/balance", handlers.GetCompanyBalance(pixPaymentUsecase))
 
 		protected.POST("/courts", handlers.CreateCourt(courtUsecase))
 		protected.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
@@ -106,7 +106,7 @@ func main() {
 		public.GET("/courts/:id/available-slots", handlers.ListAvailableBookingSlots(courtUsecase))
 		public.GET("/bookings", handlers.FindBookingByIDShowcase(bookingUsecase))
 		public.POST("/courts/:id/bookings", handlers.CreateNewBooking(bookingUsecase))
-        public.GET("/bookings/status", handlers.GetBookingPaymentStatus(pixPaymentUsecase))
+		public.GET("/bookings/status", handlers.GetBookingPaymentStatus(pixPaymentUsecase))
 	}
 
 	srv := &http.Server{

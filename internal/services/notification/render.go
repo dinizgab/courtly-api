@@ -14,7 +14,7 @@ import (
 var templateFs embed.FS
 
 type Renderer interface {
-	Render(booking entity.BookingConfirmationDTO) (string, error)
+	Render(booking entity.BookingConfirmationInfo) (string, error)
 }
 
 type htmlRendererImpl struct {
@@ -36,7 +36,7 @@ func NewHTMLRender(fsys fs.FS) (Renderer, error) {
     }, nil
 }
 
-func (r *htmlRendererImpl) Render(booking entity.BookingConfirmationDTO) (string, error) {
+func (r *htmlRendererImpl) Render(booking entity.BookingConfirmationInfo) (string, error) {
 	var buf bytes.Buffer
 	if err := r.tpl.Execute(&buf, booking); err != nil {
 		return "", fmt.Errorf("Renderer.Render - failed to execute template: %w", err)

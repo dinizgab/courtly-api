@@ -2,11 +2,9 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/repository"
-	"github.com/dinizgab/booking-mvp/internal/services/notification"
 )
 
 type (
@@ -25,7 +23,6 @@ type (
 		paymentUsecase      PaymentUsecase
 		companyUsecase      CompanyUsecase
 		courtUsecase        CourtUseCase
-		notificationService notification.Sender
 	}
 )
 
@@ -34,14 +31,12 @@ func NewBookingUsecase(
 	paymentUsecase PaymentUsecase,
 	companyUsecase CompanyUsecase,
 	courtUsecase CourtUseCase,
-	notificationService notification.Sender,
 ) BookingUsecase {
 	return &bookingUsecaseImpl{
 		bookingRepository:   bookingRepository,
 		paymentUsecase:      paymentUsecase,
 		companyUsecase:      companyUsecase,
 		courtUsecase:        courtUsecase,
-		notificationService: notificationService,
 	}
 }
 
@@ -50,11 +45,6 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 	booking.VerificationCode = entity.GenerateVerificationCode()
 
 	court, err := u.courtUsecase.FindByID(ctx, booking.CourtId)
-	if err != nil {
-		return "", err
-	}
-
-	company, err := u.companyUsecase.FindByID(ctx, court.CompanyId)
 	if err != nil {
 		return "", err
 	}
@@ -70,29 +60,6 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 
 	err = u.paymentUsecase.CreateCharge(ctx, court.CompanyId, booking)
 	if err != nil {
-		return "", err
-	}
-
-	// TODO - Send email just after payment is confirmed
-	// This should be transferred to the payment usecase ConfirmPayment method
-	bookingEmailInfo := entity.BookingConfirmationDTO{
-		GuestName:        booking.GuestName,
-		GuestPhone:       booking.GuestPhone,
-		GuestEmail:       booking.GuestEmail,
-		CourtName:        court.Name,
-		CourtAddress:     company.Address,
-		BookingDate:      booking.StartTime.Format("02-12-2006"),
-		BookingInterval:  fmt.Sprintf("%s - %s", booking.StartTime.Format("15:04"), booking.EndTime.Format("15:04")),
-		TotalPrice:       booking.TotalPrice,
-		VerificationCode: booking.VerificationCode,
-	}
-
-	errCh := make(chan error, 1)
-	go func() {
-		errCh <- u.notificationService.Send(ctx, bookingEmailInfo)
-	}()
-
-	if err = <-errCh; err != nil {
 		return "", err
 	}
 
