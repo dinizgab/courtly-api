@@ -23,7 +23,7 @@ type Company struct {
 
 type CompanyDashboard struct {
 	TotalBookings   int     `json:"total_bookings"`
-	TotalEarnings   float64 `json:"total_earnings"`
+	TotalEarnings   int64 `json:"total_earnings"`
 	TotalClients    int     `json:"total_clients"`
-	TotalBookedHours int     `json:"total_booked_hours"`
+	TotalBookedHours float64     `json:"total_booked_hours"`
 }
