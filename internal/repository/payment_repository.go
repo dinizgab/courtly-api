@@ -120,7 +120,6 @@ func (r *paymentRepositoryImpl) CreateWithdrawRequest(ctx context.Context, compa
         companyId,
         withdraw.CorrelationId,
         withdraw.Value,
-        withdraw.DestinationAlias,
     )
     if err != nil {
         return fmt.Errorf("paymentRepositoryImpl.CreateWithdrawRequest - failed to create withdraw request: %w", err)

@@ -84,7 +84,7 @@ func main() {
 		protected.GET("/companies/:id/dashboard", handlers.GetCompanyDashboard(companyUsecase))
 		protected.GET("/companies/:id/balance", handlers.GetCompanyBalance(pixPaymentUsecase))
 
-        protected.POST("/companies/:id/withdrawal", handlers.CreateWithdrawRequest(pixPaymentUsecase))
+        protected.POST("/companies/:id/withdraw", handlers.CreateWithdrawRequest(pixPaymentUsecase))
 
 		protected.POST("/courts", handlers.CreateCourt(courtUsecase))
 		protected.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
