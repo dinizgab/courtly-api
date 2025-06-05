@@ -23,6 +23,8 @@ var (
     confirmPaymentQuery string
     //go:embed sql/payment/get_booking_payment_status_by_id.sql
     getBookingPaymentStatusByIDQuery string
+    //go:embed sql/payment/create_withdraw_request.sql
+    createWithdrawRequestQuery string
 )
 
 type PaymentRepository interface {
@@ -31,6 +33,7 @@ type PaymentRepository interface {
 	CreateCharge(ctx context.Context, companyId string, charge openpix.Charge) error
     ConfirmPayment(ctx context.Context, charge openpix.Charge) error
     GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error)
+    CreateWithdrawRequest(ctx context.Context, companyId string, withdraw openpix.Withdraw) error
 }
 
 type paymentRepositoryImpl struct {
@@ -108,4 +111,20 @@ func (r *paymentRepositoryImpl) GetBookingPaymentStatusByID(ctx context.Context,
     }
 
     return status, nil
+}
+
+func (r *paymentRepositoryImpl) CreateWithdrawRequest(ctx context.Context, companyId string, withdraw openpix.Withdraw) error {
+    _, err := r.db.Exec(
+        ctx,
+        createWithdrawRequestQuery,
+        companyId,
+        withdraw.CorrelationId,
+        withdraw.Value,
+        withdraw.DestinationAlias,
+    )
+    if err != nil {
+        return fmt.Errorf("paymentRepositoryImpl.CreateWithdrawRequest - failed to create withdraw request: %w", err)
+    }
+
+    return nil
 }

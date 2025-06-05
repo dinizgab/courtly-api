@@ -19,6 +19,7 @@ type PaymentUsecase interface {
 	ConfirmPayment(ctx context.Context, charge openpix.Charge) error
 	GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error)
 	GetCompanyBalance(ctx context.Context, id string) (int64, error)
+    CreateWithdrawRequest(ctx context.Context, companyId string) error
 }
 
 type pixGatewayUsecaseImpl struct {
@@ -141,3 +142,22 @@ func (uc *pixGatewayUsecaseImpl) GetCompanyBalance(ctx context.Context, id strin
 	return total, nil
 }
 
+
+func (uc *pixGatewayUsecaseImpl) CreateWithdrawRequest(ctx context.Context, companyId string) error {
+    pixKey, err := uc.repo.GetSubaccountPixKeyByCompanyID(ctx, companyId)
+    if err != nil {
+        return err
+    }
+
+    withdraw, err := uc.pixClient.WithdrawSubaccount(ctx, pixKey)
+    if err != nil {
+        return err
+    }
+
+    err = uc.repo.CreateWithdrawRequest(ctx, companyId, withdraw)
+    if err != nil {
+        return fmt.Errorf("failed to create withdraw request: %w", err)
+    }
+
+    return nil
+}

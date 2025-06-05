@@ -127,3 +127,20 @@ func GetCompanyBalance(uc usecase.PaymentUsecase) func(*gin.Context) {
 		})
 	}
 }
+
+func CreateWithdrawRequest(uc usecase.PaymentUsecase) func(*gin.Context) {
+    return func(c *gin.Context) {
+        id := c.Param("id")
+
+        err := uc.CreateWithdrawRequest(c.Request.Context(), id)
+        if err != nil {
+            log.Println(err)
+            c.JSON(500, gin.H{"error": "Failed to create withdraw request"})
+            return
+        }
+
+        c.JSON(200, gin.H{
+            "message": "Withdraw request created successfully",
+        })
+    }
+}

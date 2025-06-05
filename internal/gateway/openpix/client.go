@@ -15,7 +15,8 @@ import (
 type OpenPixClient interface {
 	CreateSubaccount(ctx context.Context, subaccount Subaccount) (Subaccount, error)
 	CreateCharge(ctx context.Context, subaccountKey string, booking entity.Booking) (Charge, error)
-    GetCompanyBalance(ctx context.Context, pixKey string) (int64, error)
+	GetCompanyBalance(ctx context.Context, pixKey string) (int64, error)
+	WithdrawSubaccount(ctx context.Context, pixKey string) (Withdraw, error)
 }
 
 type openPixClientImpl struct {
@@ -115,30 +116,62 @@ func (c *openPixClientImpl) CreateCharge(ctx context.Context, subaccountKey stri
 }
 
 func (c *openPixClientImpl) GetCompanyBalance(ctx context.Context, pixKey string) (int64, error) {
-    url := fmt.Sprintf("%s/api/v1/subaccount/%s", c.baseURL, pixKey)
-    req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-    if err != nil {
-        return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to create request: %w", err)
-    }
+	url := fmt.Sprintf("%s/api/v1/subaccount/%s", c.baseURL, pixKey)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to create request: %w", err)
+	}
 
 	req.Header.Set("Content-Type", "application/json")
-    req.Header.Set("Authorization", c.appId)
+	req.Header.Set("Authorization", c.appId)
 
-    res, err := c.httpClient.Do(req)
-    if err != nil {
-        return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to send request: %w", err)
-    }
-    defer res.Body.Close()
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to send request: %w", err)
+	}
+	defer res.Body.Close()
 
-    if res.StatusCode != http.StatusOK {
-        return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to get balance with status: %s", res.Status)
-    }
+	if res.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to get balance with status: %s", res.Status)
+	}
 
-    var out SubAccountResponse
-    err = json.NewDecoder(res.Body).Decode(&out)
-    if err != nil {
-        return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to decode response: %w", err)
-    }
+	var out SubAccountResponse
+	err = json.NewDecoder(res.Body).Decode(&out)
+	if err != nil {
+		return 0, fmt.Errorf("OpenPixClient.GetCompanyBalance - failed to decode response: %w", err)
+	}
 
-    return out.Subaccount.Balance, nil
+	return out.Subaccount.Balance, nil
+}
+
+func (c *openPixClientImpl) WithdrawSubaccount(ctx context.Context, pixKey string) (Withdraw, error) {
+	url := fmt.Sprintf("%s/api/v1/subaccount/%s/withdraw", c.baseURL, pixKey)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	if err != nil {
+		return Withdraw{}, fmt.Errorf("OpenPixClient.WithdrawSubaccount - failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", c.appId)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return Withdraw{}, fmt.Errorf("OpenPixClient.WithdrawSubaccount - failed to send request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return Withdraw{}, fmt.Errorf("OpenPixClient.WithdrawSubaccount - failed to withdraw with status: %s", res.Status)
+	}
+
+	var out struct {
+		Withdraw Withdraw `json:"transaction"`
+	}
+	err = json.NewDecoder(res.Body).Decode(&out)
+	if err != nil {
+		return Withdraw{}, fmt.Errorf("OpenPixClient.WithdrawSubaccount - failed to decode response: %w", err)
+	}
+
+	return out.Withdraw, nil
 }
