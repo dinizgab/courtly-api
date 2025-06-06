@@ -76,7 +76,6 @@ func main() {
 
 	router.POST("/auth/signup", handlers.CreateNewCompany(companyUsecase))
 	router.POST("/auth/login", handlers.LoginCompany(companyUsecase))
-	router.POST("/payment/pix/confirmation", webhooks.ConfirmPaymentWebhook(pixPaymentUsecase))
 
 	protected := router.Group("/admin")
 	protected.Use(auth.AuthMiddleware(authService))
@@ -109,6 +108,12 @@ func main() {
 		public.GET("/bookings", handlers.FindBookingByIDShowcase(bookingUsecase))
 		public.POST("/courts/:id/bookings", handlers.CreateNewBooking(bookingUsecase))
 		public.GET("/bookings/status", handlers.GetBookingPaymentStatus(pixPaymentUsecase))
+	}
+
+	webhookRouter := router.Group("/webhooks")
+	{
+		webhookRouter.POST("/pix/confirmed", webhooks.ConfirmedPaymentWebhook(pixPaymentUsecase))
+		webhookRouter.POST("/pix/expired", webhooks.ExpiredPaymentWebhook(pixPaymentUsecase))
 	}
 
 	srv := &http.Server{

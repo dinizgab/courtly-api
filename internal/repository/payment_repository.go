@@ -25,6 +25,8 @@ var (
     getBookingPaymentStatusByIDQuery string
     //go:embed sql/payment/create_withdraw_request.sql
     createWithdrawRequestQuery string
+	//go:embed sql/payment/expire_payment.sql
+	expirePaymentQuery string
 )
 
 type PaymentRepository interface {
@@ -34,6 +36,7 @@ type PaymentRepository interface {
     ConfirmPayment(ctx context.Context, charge openpix.Charge) error
     GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error)
     CreateWithdrawRequest(ctx context.Context, companyId string, withdraw openpix.Withdraw) error
+	ExpirePayment(ctx context.Context, charge openpix.Charge) error
 }
 
 type paymentRepositoryImpl struct {
@@ -126,4 +129,17 @@ func (r *paymentRepositoryImpl) CreateWithdrawRequest(ctx context.Context, compa
     }
 
     return nil
+}
+
+func (r *paymentRepositoryImpl) ExpirePayment(ctx context.Context, charge openpix.Charge) error {
+	_, err := r.db.Exec(
+		ctx,
+		expirePaymentQuery,
+		charge.CorrelationID,
+	)
+	if err != nil {
+		return fmt.Errorf("paymentRepositoryImpl.ExpirePayment - failed to expire payment: %w", err)
+	}
+
+	return nil
 }

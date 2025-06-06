@@ -43,7 +43,7 @@ type Charge struct {
 	//Payer Payer `json:"payer"`
 }
 
-type ChargeConfirmedResponse struct {
+type ChargeWebhookEvent struct {
 	WebhookEvent  string `json:"event"`
 	Charge Charge `json:"charge"`
 }
