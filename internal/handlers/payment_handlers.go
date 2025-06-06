@@ -20,3 +20,18 @@ func GetBookingPaymentStatus(uc usecase.PaymentUsecase) func(*gin.Context) {
         c.JSON(200, gin.H{"status": status})
     }
 }
+
+func GetBookingChargeInformation(uc usecase.PaymentUsecase) func(*gin.Context) {
+    return func(c *gin.Context) {
+        bookingID := c.Param("id")
+        charge, err := uc.GetBookingChargeInformation(c.Request.Context(), bookingID)
+        if err != nil {
+            log.Println(err)
+            c.JSON(500, gin.H{"error": "Failed to get booking charge information"})
+            return
+        }
+        c.JSON(200, gin.H{
+            "charge": charge,
+        })
+    }
+}

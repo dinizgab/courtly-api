@@ -4,6 +4,7 @@ insert into payments (
     correlation_id,
     payment_link_id,
     payment_link_url,
+    qr_code_image,
     brcode,
     value_total,
     expires_at
@@ -15,6 +16,7 @@ insert into payments (
     $5,
     $6,
     $7,
-    $8
+    $8,
+    $9
 )
 

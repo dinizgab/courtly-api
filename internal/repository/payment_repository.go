@@ -27,6 +27,8 @@ var (
     createWithdrawRequestQuery string
 	//go:embed sql/payment/expire_payment.sql
 	expirePaymentQuery string
+    //go:embed sql/payment/get_booking_charge_information_by_booking_id.sql
+    getBookingChargeInformationByBookingId string
 )
 
 type PaymentRepository interface {
@@ -37,6 +39,7 @@ type PaymentRepository interface {
     GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error)
     CreateWithdrawRequest(ctx context.Context, companyId string, withdraw openpix.Withdraw) error
 	ExpirePayment(ctx context.Context, charge openpix.Charge) error
+    GetBookingChargeInformation(ctx context.Context, id string) (entity.Payment, error)
 }
 
 type paymentRepositoryImpl struct {
@@ -78,6 +81,7 @@ func (r *paymentRepositoryImpl) CreateCharge(ctx context.Context, companyId stri
 		charge.CorrelationID,
 		charge.PaymentLinkID,
 		charge.PaymentLinkURL,
+        charge.QrCodeImage,
 		charge.Brcode,
 		charge.Value,
 		charge.ExpiresDate,
@@ -114,6 +118,22 @@ func (r *paymentRepositoryImpl) GetBookingPaymentStatusByID(ctx context.Context,
     }
 
     return status, nil
+}
+
+func (r *paymentRepositoryImpl) GetBookingChargeInformation(ctx context.Context, id string) (entity.Payment, error) {
+    var payment entity.Payment
+    err := r.db.QueryRow(ctx, getBookingChargeInformationByBookingId, id).Scan(
+        &payment.BrCode,
+        &payment.QrCodeImage,
+    )
+    if err != nil {
+        if err == pgx.ErrNoRows {
+            return entity.Payment{}, fmt.Errorf("paymentRepositoryImpl.GetPaymentBookingPaymentInformation - booking payment not found: %w", err)
+        }
+        return entity.Payment{}, fmt.Errorf("paymentRepositoryImpl.GetPaymentBookingPaymentInformation - failed to get booking payment information: %w", err)
+    }
+
+    return payment, nil
 }
 
 func (r *paymentRepositoryImpl) CreateWithdrawRequest(ctx context.Context, companyId string, withdraw openpix.Withdraw) error {

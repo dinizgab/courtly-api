@@ -9,7 +9,8 @@ type Payment struct {
 	SubaccountID    string    `json:"subaccount_id"`
 	CorrelationID   string    `json:"correlation_id"`
 	ChargeID        string    `json:"charge_id"`
-	BRCODE          string    `json:"brcode"`
+	BrCode          string    `json:"brcode"`
+    QrCodeImage    string    `json:"qr_code_image"`
 	ValueTotal      int64     `json:"value_total"`
 	ValueCommission int64     `json:"value_commission"`
 	ValueCompany    int64     `json:"value_company"`

@@ -108,6 +108,7 @@ func main() {
 		public.GET("/bookings", handlers.FindBookingByIDShowcase(bookingUsecase))
 		public.POST("/courts/:id/bookings", handlers.CreateNewBooking(bookingUsecase))
 		public.GET("/bookings/status", handlers.GetBookingPaymentStatus(pixPaymentUsecase))
+        public.GET("/bookings/:id/charge", handlers.GetBookingChargeInformation(pixPaymentUsecase))
 	}
 
 	webhookRouter := router.Group("/webhooks")
