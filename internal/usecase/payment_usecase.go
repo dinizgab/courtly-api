@@ -20,7 +20,7 @@ type PaymentUsecase interface {
 	GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error)
 	GetCompanyBalance(ctx context.Context, id string) (int64, error)
     CreateWithdrawRequest(ctx context.Context, companyId string) error
-	ExpiredPaymentWebhook(ctx context.Context, charge openpix.Charge) error
+	ExpirePayment(ctx context.Context, charge openpix.Charge) error
 }
 
 type pixGatewayUsecaseImpl struct {
@@ -163,7 +163,7 @@ func (uc *pixGatewayUsecaseImpl) CreateWithdrawRequest(ctx context.Context, comp
     return nil
 }
 
-func (uc *pixGatewayUsecaseImpl) ExpiredPaymentWebhook(ctx context.Context, charge openpix.Charge) error {
+func (uc *pixGatewayUsecaseImpl) ExpirePayment(ctx context.Context, charge openpix.Charge) error {
 	err := uc.repo.ExpirePayment(ctx, charge)
 	if err != nil {
 		return err
