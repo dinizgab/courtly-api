@@ -119,7 +119,6 @@ func (r *courtRepositoryImpl) ListBookingsByID(ctx context.Context, id string) (
 			&booking.GuestName,
 			&booking.GuestEmail,
 			&booking.GuestPhone,
-			&booking.Status,
 			&booking.VerificationCode,
 		)
 		if err != nil {
@@ -179,13 +178,13 @@ func (r *courtRepositoryImpl) ListCompanyCourtsShowcase(ctx context.Context, com
 		err := rows.Scan(
 			&court.ID,
 			&court.Name,
-            &court.Description,
+			&court.Description,
 			&court.SportType,
 			&court.HourlyPrice,
 			&court.IsActive,
-            &court.OpeningTime,
-            &court.ClosingTime,
-            &court.Capacity,
+			&court.OpeningTime,
+			&court.ClosingTime,
+			&court.Capacity,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: %w", err)

@@ -8,7 +8,6 @@ SELECT
     guest_name,
     guest_email,
     guest_phone,
-    status,
     verification_code
 FROM
     bookings

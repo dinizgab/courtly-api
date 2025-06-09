@@ -135,7 +135,7 @@ func (u *companyUsecaseImpl) Update(ctx context.Context, id string, company enti
 func (u *companyUsecaseImpl) Delete(ctx context.Context, id string) error {
 	err := u.companyRepository.Delete(ctx, id)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	return nil

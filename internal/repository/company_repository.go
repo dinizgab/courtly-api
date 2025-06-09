@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	_ "embed"
@@ -15,9 +16,9 @@ type (
 	CompanyRepository interface {
 		Create(ctx context.Context, company entity.Company) (entity.Company, error)
 		FindByID(ctx context.Context, id string) (entity.Company, error)
-        FindByEmail(ctx context.Context, email string) (entity.Company, error)
+		FindByEmail(ctx context.Context, email string) (entity.Company, error)
 		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
-        GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error)
+		GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error)
 		Update(ctx context.Context, id string, company entity.Company) error
 		Delete(ctx context.Context, id string) error
 	}
@@ -32,12 +33,12 @@ var (
 	createCompanyQuery string
 	//go:embed sql/company/find_company_by_id.sql
 	findCompanyByIDQuery string
-    //go:embed sql/company/find_company_by_email.sql
-    findCompanyByEmailQuery string
+	//go:embed sql/company/find_company_by_email.sql
+	findCompanyByEmailQuery string
 	//go:embed sql/company/find_company_by_slug.sql
 	findCompanyBySlugQuery string
-    //go:embed sql/company/get_dashboard_info.sql
-    getDashboardInfoQuery string
+	//go:embed sql/company/get_dashboard_info.sql
+	getDashboardInfoQuery string
 	//go:embed sql/company/update_company.sql
 	updateCompanyQuery string
 	//go:embed sql/company/delete_company.sql
@@ -76,7 +77,7 @@ func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (entity
 		&company.Address,
 		&company.Phone,
 		&company.Email,
-        &company.CNPJ,
+		&company.CNPJ,
 		&company.Slug,
 	)
 	if err != nil {
@@ -91,21 +92,21 @@ func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (entity
 }
 
 func (r *companyRepositoryImpl) FindByEmail(ctx context.Context, email string) (entity.Company, error) {
-    var company entity.Company
-    err := r.db.QueryRow(ctx, findCompanyByEmailQuery, email).Scan(
-        &company.ID,
-        &company.Email,
-        &company.Password,
-    )
-    if err != nil {
-        if err == pgx.ErrNoRows {
-            return entity.Company{}, err
-        }
+	var company entity.Company
+	err := r.db.QueryRow(ctx, findCompanyByEmailQuery, email).Scan(
+		&company.ID,
+		&company.Email,
+		&company.Password,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entity.Company{}, err
+		}
 
-        return entity.Company{}, fmt.Errorf("CompanyRepository.FindByEmail: %w", err)
-    }
+		return entity.Company{}, fmt.Errorf("CompanyRepository.FindByEmail: %w", err)
+	}
 
-    return company, nil
+	return company, nil
 }
 
 func (r *companyRepositoryImpl) FindBySlug(ctx context.Context, slug string) (entity.Company, error) {
@@ -130,32 +131,32 @@ func (r *companyRepositoryImpl) FindBySlug(ctx context.Context, slug string) (en
 }
 
 func (r *companyRepositoryImpl) GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error) {
-    var dashboard entity.CompanyDashboard
-    err := r.db.QueryRow(ctx, getDashboardInfoQuery, companyId).Scan(
-        &dashboard.TotalEarnings,
-        &dashboard.TotalBookedHours,
-        &dashboard.TotalBookings,
-        &dashboard.TotalClients,
-    )
-    if err != nil {
-        return entity.CompanyDashboard{}, fmt.Errorf("CompanyRepository.GetDashboardInfo: %w", err)
-    }
+	var dashboard entity.CompanyDashboard
+	err := r.db.QueryRow(ctx, getDashboardInfoQuery, companyId).Scan(
+		&dashboard.TotalEarnings,
+		&dashboard.TotalBookedHours,
+		&dashboard.TotalBookings,
+		&dashboard.TotalClients,
+	)
+	if err != nil {
+		return entity.CompanyDashboard{}, fmt.Errorf("CompanyRepository.GetDashboardInfo: %w", err)
+	}
 
-    return dashboard, nil
+	return dashboard, nil
 }
 
 func (r *companyRepositoryImpl) Update(ctx context.Context, id string, company entity.Company) error {
 	_, err := r.db.Exec(
-        ctx,
-        updateCompanyQuery,
-        company.Name,
-        company.Address,
-        company.Phone,
-        company.Email,
-        company.CNPJ,
-        company.Slug,
-        id,
-    )
+		ctx,
+		updateCompanyQuery,
+		company.Name,
+		company.Address,
+		company.Phone,
+		company.Email,
+		company.CNPJ,
+		company.Slug,
+		id,
+	)
 	if err != nil {
 		return fmt.Errorf("CompanyRepository.Update: %w", err)
 	}
