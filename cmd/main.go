@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/dinizgab/booking-mvp/internal/services/storage"
 	"log"
@@ -44,7 +45,7 @@ func main() {
 	}
 	defer db.Close()
 
-	authService := auth.NewAuthService([]byte(cfg.API.JwtSecret))
+	authService := auth.NewAuthService(cfg.API.JwtSecret)
 	emailRenderer, err := notification.NewHTMLRender(nil)
 	if err != nil {
 		log.Fatalf("Failed to create email renderer: %v", err)
@@ -131,7 +132,7 @@ func main() {
 	defer cancel()
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("cmd.main - Failed to start server: %v", err)
 		}
 	}()
