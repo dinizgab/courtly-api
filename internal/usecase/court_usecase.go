@@ -54,6 +54,7 @@ func (u *courtUseCaseImpl) Create(ctx context.Context, court entity.Court, photo
 		if err != nil {
 			return fmt.Errorf("CourtUsecase.Create - could not open photo file: %w", err)
 		}
+
 		publicURL, err := u.uploadStorage.UploadFile(ctx, court.ID, filename, file)
 		if err != nil {
 			return err
@@ -68,6 +69,11 @@ func (u *courtUseCaseImpl) Create(ctx context.Context, court entity.Court, photo
 		}
 
 		photosEntities = append(photosEntities, photo)
+
+		err = file.Close()
+		if err != nil {
+			return fmt.Errorf("CourtUsecase.Create - could not close photo file: %w", err)
+		}
 	}
 
 	err = u.courtRepository.InsertPhotos(ctx, photosEntities)
