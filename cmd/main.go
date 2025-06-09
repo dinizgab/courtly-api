@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/dinizgab/booking-mvp/internal/services/storage"
 	"log"
 	"net/http"
 	"os"
@@ -51,6 +52,7 @@ func main() {
 
 	pixGatewayClient := openpix.NewOpenPixClient(config.OpenPix)
 	emailService := notification.NewEmailSender(emailRenderer, config.SMTP)
+	storageUploadService := storage.NewSupabaseStorageUploader(config.Storage, "court-photos")
 
 	companyRepository := repository.NewCompanyRepository(db)
 	courtRepository := repository.NewCourtRepository(db)
@@ -58,7 +60,7 @@ func main() {
 	paymentRepository := repository.NewPaymentRepository(db)
 
 	pixPaymentUsecase := usecase.NewPixGatewayService(pixGatewayClient, bookingRepository, paymentRepository, emailService)
-	courtUsecase := usecase.NewCourtUseCase(courtRepository)
+	courtUsecase := usecase.NewCourtUseCase(courtRepository, storageUploadService)
 	companyUsecase := usecase.NewCompanyUsecase(companyRepository, authService, pixPaymentUsecase)
 	bookingUsecase := usecase.NewBookingUsecase(bookingRepository, pixPaymentUsecase, companyUsecase, courtUsecase)
 
@@ -83,7 +85,7 @@ func main() {
 		protected.GET("/companies/:id/dashboard", handlers.GetCompanyDashboard(companyUsecase))
 		protected.GET("/companies/:id/balance", handlers.GetCompanyBalance(pixPaymentUsecase))
 
-        protected.POST("/companies/:id/withdraw", handlers.CreateWithdrawRequest(pixPaymentUsecase))
+		protected.POST("/companies/:id/withdraw", handlers.CreateWithdrawRequest(pixPaymentUsecase))
 
 		protected.POST("/courts", handlers.CreateCourt(courtUsecase))
 		protected.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
@@ -108,7 +110,7 @@ func main() {
 		public.GET("/bookings", handlers.FindBookingByIDShowcase(bookingUsecase))
 		public.POST("/courts/:id/bookings", handlers.CreateNewBooking(bookingUsecase))
 		public.GET("/bookings/status", handlers.GetBookingPaymentStatus(pixPaymentUsecase))
-        public.GET("/bookings/:id/charge", handlers.GetBookingChargeInformation(pixPaymentUsecase))
+		public.GET("/bookings/:id/charge", handlers.GetBookingChargeInformation(pixPaymentUsecase))
 	}
 
 	webhookRouter := router.Group("/webhooks")

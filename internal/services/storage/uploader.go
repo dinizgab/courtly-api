@@ -17,7 +17,7 @@ type supabaseStorageUploader struct {
 	Bucket string
 }
 
-func NewSupabaseStorageUploader(config config.StorageConfig, bucket string) StorageUploader {
+func NewSupabaseStorageUploader(config *config.StorageConfig, bucket string) StorageUploader {
 	client := supabase.NewClient(
 		config.ProjectURL,
 		config.APIKey,
