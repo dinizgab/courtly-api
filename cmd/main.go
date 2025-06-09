@@ -33,26 +33,26 @@ func main() {
 		}
 	}
 
-	config, err := config.New()
+	cfg, err := config.New()
 	if err != nil {
-		log.Fatalf("Error loading config: %v", err)
+		log.Fatalf("Error loading cfg: %v", err)
 	}
 
-	db, err := database.New(config.DB)
+	db, err := database.New(cfg.DB)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %v", err)
 	}
 	defer db.Close()
 
-	authService := auth.NewAuthService([]byte(config.API.JwtSecret))
+	authService := auth.NewAuthService([]byte(cfg.API.JwtSecret))
 	emailRenderer, err := notification.NewHTMLRender(nil)
 	if err != nil {
 		log.Fatalf("Failed to create email renderer: %v", err)
 	}
 
-	pixGatewayClient := openpix.NewOpenPixClient(config.OpenPix)
-	emailService := notification.NewEmailSender(emailRenderer, config.SMTP)
-	storageUploadService := storage.NewSupabaseStorageUploader(config.Storage, "court-photos")
+	pixGatewayClient := openpix.NewOpenPixClient(cfg.OpenPix)
+	emailService := notification.NewEmailSender(emailRenderer, cfg.SMTP)
+	storageUploadService := storage.NewSupabaseStorageUploader(cfg.Storage, "court-photos")
 
 	companyRepository := repository.NewCompanyRepository(db)
 	courtRepository := repository.NewCourtRepository(db)
@@ -120,7 +120,7 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%s", config.API.Port),
+		Addr:         fmt.Sprintf(":%s", cfg.API.Port),
 		Handler:      router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 30 * time.Second,
