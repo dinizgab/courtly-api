@@ -1,21 +1,20 @@
-INSERT INTO courts(
-    company_id,
-    name,
-    description,
-    sport_type,
-    hourly_price,
-    is_active,
-    opening_time,
-    closing_time,
-    capacity
-) VALUES (
-    $1,
-    $2,
-    $3,
-    $4,
-    $5,
-    $6,
-    $7,
-    $8,
-    $9
-);
+INSERT INTO courts(id,
+                   company_id,
+                   name,
+                   description,
+                   sport_type,
+                   hourly_price,
+                   is_active,
+                   opening_time,
+                   closing_time,
+                   capacity)
+VALUES ($1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10);
