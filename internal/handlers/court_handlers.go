@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"log"
+	"mime/multipart"
+	"strings"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/usecase"
@@ -26,16 +28,15 @@ func CreateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
 			return
 		}
 
-		// TODO - Save court photos
-		//files := form.File
-		//photos := make([]*multipart.FileHeader, 0)
-		//for i, fhArr := range files {
-		//	if strings.HasPrefix(i, "photo_") {
-		//		photos = append(photos, fhArr[0])
-		//	}
-		//}
+		files := form.File
+		photos := make([]*multipart.FileHeader, 0)
+		for i, fhArr := range files {
+			if strings.HasPrefix(i, "photo_") {
+				photos = append(photos, fhArr[0])
+			}
+		}
 
-		err = uc.Create(c.Request.Context(), court)
+		err = uc.Create(c.Request.Context(), court, photos)
 		if err != nil {
 			log.Println(err)
 			c.JSON(500, gin.H{"error": "Failed to create court"})
@@ -203,7 +204,6 @@ func CreateNewBooking(uc usecase.BookingUsecase) func(*gin.Context) {
 			return
 		}
 
-        c.JSON(201, gin.H{"message": "Booking created successfully", "id": id})
+		c.JSON(201, gin.H{"message": "Booking created successfully", "id": id})
 	}
 }
-

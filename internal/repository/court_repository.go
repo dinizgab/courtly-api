@@ -10,9 +10,12 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+const CourtPhotosName = "court_photos"
+
 type (
 	CourtRepository interface {
 		Create(ctx context.Context, c *entity.Court) error
+		InsertPhotos(ctx context.Context, c []entity.CourtPhoto) error
 		FindByID(ctx context.Context, id string) (entity.Court, error)
 		ListBookingsByID(ctx context.Context, id string) ([]entity.Booking, error)
 		ListByCompany(ctx context.Context, companyID string) ([]entity.Court, error)
@@ -56,6 +59,7 @@ func (r *courtRepositoryImpl) Create(ctx context.Context, c *entity.Court) error
 	_, err := r.db.Exec(
 		ctx,
 		createCourtQuery,
+		c.ID,
 		c.CompanyId,
 		c.Name,
 		c.Description,
@@ -68,6 +72,32 @@ func (r *courtRepositoryImpl) Create(ctx context.Context, c *entity.Court) error
 	)
 	if err != nil {
 		return fmt.Errorf("CourtRepository.Create: %w", err)
+	}
+
+	return nil
+}
+
+func (r *courtRepositoryImpl) InsertPhotos(ctx context.Context, photos []entity.CourtPhoto) error {
+	if len(photos) == 0 {
+		return nil
+	}
+
+	columns := []string{"id", "court_id", "path", "position", "is_cover"}
+
+	rows := make([][]interface{}, len(photos))
+	for i, p := range photos {
+		rows[i] = []any{
+			p.ID,
+			p.CourtId,
+			p.Path,
+			p.Position,
+			p.IsCover,
+		}
+	}
+
+	_, err := r.db.CopyFrom(ctx, CourtPhotosName, columns, rows)
+	if err != nil {
+		return fmt.Errorf("CourtRepository.InsertPhotos - error inserting photos in the database: %w", err)
 	}
 
 	return nil
