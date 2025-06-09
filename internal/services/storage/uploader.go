@@ -35,7 +35,7 @@ func (s *supabaseStorageUploader) UploadFile(ctx context.Context, courtId string
 
 	remoteFilePath := fmt.Sprintf("%s/%s/%s", companyId, courtId, filename)
 
-	_, err := s.Client.UploadFile(s.Bucket, companyId, fileBytes)
+	_, err := s.Client.UploadFile(s.Bucket, remoteFilePath, fileBytes)
 	if err != nil {
 		return "", fmt.Errorf("SupabaseStorageUploader.UploadFile - Error uploading file: %w", err)
 	}
