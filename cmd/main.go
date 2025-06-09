@@ -80,7 +80,7 @@ func main() {
 	router.POST("/auth/login", handlers.LoginCompany(companyUsecase))
 
 	protected := router.Group("/admin")
-	protected.Use(auth.AuthMiddleware(authService))
+	protected.Use(auth.Middleware(authService))
 	{
 		protected.GET("/companies/:id/dashboard", handlers.GetCompanyDashboard(companyUsecase))
 		protected.GET("/companies/:id/balance", handlers.GetCompanyBalance(pixPaymentUsecase))

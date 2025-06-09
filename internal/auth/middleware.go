@@ -9,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthMiddleware(as AuthService) gin.HandlerFunc {
+func Middleware(as AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
@@ -47,7 +47,7 @@ func AuthMiddleware(as AuthService) gin.HandlerFunc {
 			return
 		}
 
-        companyID, ok := claims["company_id"].(string)
+		companyID, ok := claims["company_id"].(string)
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid claim: company_id"})
 			c.Abort()
