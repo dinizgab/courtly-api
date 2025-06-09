@@ -36,7 +36,7 @@ func CreateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
 			}
 		}
 
-		err = uc.Create(c.Request.Context(), court, photos)
+		err = uc.Create(c, court, photos)
 		if err != nil {
 			log.Println(err)
 			c.JSON(500, gin.H{"error": "Failed to create court"})
