@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"net/http"
 	"strings"
 	"time"
 
@@ -20,9 +19,9 @@ func Middleware(as AuthService) gin.HandlerFunc {
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, &CourtlyClaims{}, func(token *jwt.Token) (interface{}, error) {
 			if token.Method != jwt.SigningMethodHS256 {
-				return nil, jwt.ErrInvalidType
+				return nil, jwt.ErrTokenSignatureInvalid
 			}
 
 			return as.GetSecretKey(), nil
@@ -34,28 +33,19 @@ func Middleware(as AuthService) gin.HandlerFunc {
 			return
 		}
 
-		claims, ok := token.Claims.(jwt.MapClaims)
+		claims, ok := token.Claims.(*CourtlyClaims)
 		if !ok {
 			c.JSON(401, gin.H{"error": "unauthorized"})
 			c.Abort()
 			return
 		}
 
-		if exp, ok := claims["exp"].(float64); !ok || int64(exp) < time.Now().Unix() {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "token expired"})
-			c.Abort()
-			return
+        if claims.ExpiresAt.Time.Before(time.Now()) {
+			c.JSON(401, gin.H{"error": "token expired"})
+			c.Abort(); return
 		}
 
-		companyID, ok := claims["company_id"].(string)
-		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid claim: company_id"})
-			c.Abort()
-			return
-		}
-
-		c.Set("company_id", companyID)
-		c.Set("issuer", claims["iss"])
+		c.Set("company_id", claims.Sub)
 		c.Set("jwt_token", tokenString)
 
 		c.Next()

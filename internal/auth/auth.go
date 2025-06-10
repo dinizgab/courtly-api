@@ -1,13 +1,20 @@
 package auth
 
 import (
-	"github.com/golang-jwt/jwt/v5"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
+
+type CourtlyClaims struct {
+    Sub string `json:"sub"`
+    Role string `json:"role"`
+    jwt.RegisteredClaims
+}
 
 type AuthService interface {
 	GenerateToken(companyID string) (string, error)
-    GetSecretKey() []byte
+	GetSecretKey() []byte
 }
 
 type authServiceImpl struct {
@@ -21,14 +28,18 @@ func NewAuthService(jwtSecret []byte) AuthService {
 }
 
 func (s *authServiceImpl) GenerateToken(companyID string) (string, error) {
-	claims := jwt.MapClaims{
-		"company_id": companyID,
-		"iss":        "courtly-api",
-		"exp":        time.Now().Add(24 * time.Hour * 7).Unix(),
-	}
+	claims := CourtlyClaims{
+        Sub: companyID,
+        Role: "authenticated",
+        RegisteredClaims: jwt.RegisteredClaims{
+            Issuer:    "courtly-api",
+            IssuedAt:  jwt.NewNumericDate(time.Now()),
+            ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour * 7)),
+            Audience: jwt.ClaimStrings{"authenticated"},
+        },
+    }
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
 	return token.SignedString(s.jwtSecret)
 }
 
