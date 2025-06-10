@@ -52,7 +52,8 @@ func LoginCompany(uc usecase.CompanyUsecase) func(*gin.Context) {
 				c.JSON(401, gin.H{"error": "Invalid credentials"})
 			}
 			return
-		}
+		
+        }
 
 		c.JSON(200, gin.H{
 			"message": "Login successful",

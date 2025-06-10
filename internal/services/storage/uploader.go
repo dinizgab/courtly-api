@@ -13,34 +13,37 @@ type StorageUploader interface {
 }
 
 type supabaseStorageUploader struct {
-	Client *supabase.Client
-	Bucket string
+	ProjectURL string
+	APIKey     string
+	Bucket     string
 }
 
 func NewSupabaseStorageUploader(config *config.StorageConfig, bucket string) StorageUploader {
-	client := supabase.NewClient(
-		config.ProjectURL,
-		config.APIKey,
-		nil,
-	)
-
 	return &supabaseStorageUploader{
-		Client: client,
-		Bucket: bucket,
+		ProjectURL: config.ProjectURL,
+		APIKey:     config.APIKey,
+		Bucket:     bucket,
 	}
 }
 
 func (s *supabaseStorageUploader) UploadFile(ctx context.Context, courtId string, filename string, fileBytes io.Reader) (string, error) {
+	token := ctx.Value("jwt_token").(string)
 	companyId := ctx.Value("company_id").(string)
-
 	remoteFilePath := fmt.Sprintf("%s/%s/%s", companyId, courtId, filename)
+	client := supabase.NewClient(
+		s.ProjectURL,
+		s.APIKey,
+		map[string]string{
+			"Authorization": "Bearer " + token,
+		},
+	)
 
-	_, err := s.Client.UploadFile(s.Bucket, remoteFilePath, fileBytes)
+	_, err := client.UploadFile(s.Bucket, remoteFilePath, fileBytes)
 	if err != nil {
 		return "", fmt.Errorf("SupabaseStorageUploader.UploadFile - Error uploading file: %w", err)
 	}
 
-	url := s.Client.GetPublicUrl(s.Bucket, remoteFilePath)
+	url := client.GetPublicUrl(s.Bucket, remoteFilePath)
 
 	return url.SignedURL, nil
 }
