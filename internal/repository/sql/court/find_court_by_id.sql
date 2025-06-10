@@ -1,15 +1,19 @@
 SELECT
-    id,
-    company_id,
-    name,
-    description,
-    sport_type,
-    hourly_price,
-    is_active,
-    opening_time,
-    closing_time,
-    capacity
+    c.id as court_id,
+    c.company_id,
+    c.name,
+    c.description,
+    c.sport_type,
+    c.hourly_price,
+    c.is_active,
+    c.opening_time,
+    c.closing_time,
+    c.capacity,
+    cp.id as photo_id,
+    cp.path
 FROM
-    courts
+    courts c
+JOIN
+    court_photos cp ON c.id = cp.court_id
 WHERE
-    id = $1;
+    c.id = $1;

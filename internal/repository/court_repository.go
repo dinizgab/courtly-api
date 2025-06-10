@@ -105,6 +105,9 @@ func (r *courtRepositoryImpl) InsertPhotos(ctx context.Context, photos []entity.
 
 func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.Court, error) {
 	var court entity.Court
+    // TODO - Add multiple photos to the court entity
+    // An array instead of a single photo
+    var courtPhoto entity.CourtPhoto
 	err := r.db.QueryRow(ctx, findCourtByIDQuery, id).Scan(
 		&court.ID,
 		&court.CompanyId,
@@ -116,7 +119,11 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 		&court.OpeningTime,
 		&court.ClosingTime,
 		&court.Capacity,
+        &courtPhoto.ID,
+        &courtPhoto.Path,
 	)
+
+    court.Photos = []entity.CourtPhoto{courtPhoto}
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -205,6 +212,7 @@ func (r *courtRepositoryImpl) ListCompanyCourtsShowcase(ctx context.Context, com
 	courts := make([]entity.Court, 0)
 	for rows.Next() {
 		var court entity.Court
+        var courtPhoto entity.CourtPhoto
 		err := rows.Scan(
 			&court.ID,
 			&court.Name,
@@ -215,10 +223,14 @@ func (r *courtRepositoryImpl) ListCompanyCourtsShowcase(ctx context.Context, com
 			&court.OpeningTime,
 			&court.ClosingTime,
 			&court.Capacity,
+            &courtPhoto.ID,
+            &courtPhoto.Path,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: %w", err)
 		}
+        court.Photos = []entity.CourtPhoto{courtPhoto}
+
 		courts = append(courts, court)
 	}
 

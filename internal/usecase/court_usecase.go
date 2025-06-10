@@ -39,10 +39,14 @@ func NewCourtUseCase(courtRepository repository.CourtRepository, uploadStorage s
 
 func (u *courtUseCaseImpl) Create(ctx context.Context, court entity.Court, photos []*multipart.FileHeader) error {
 	court.ID = uuid.New().String()
+    // TODO - Return uuid from here
+    fmt.Println("Creating court with ID:", court)
 	err := u.courtRepository.Create(ctx, &court)
 	if err != nil {
 		return err
 	}
+
+
 
 	var photosEntities []entity.CourtPhoto
 	for position, fh := range photos {

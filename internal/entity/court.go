@@ -17,6 +17,7 @@ type Court struct {
 	BookingsToday int       `json:"bookings_today"`
 	Bookings      []Booking `json:"bookings"`
 	Company       *Company  `json:"company,omitempty"`
+    Photos       []CourtPhoto `json:"photos,omitempty"`
 }
 
 type CourtPhoto struct {
