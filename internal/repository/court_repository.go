@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	_ "embed"
 	"fmt"
 
@@ -68,8 +69,6 @@ func (r *courtRepositoryImpl) Create(ctx context.Context, c *entity.Court) (stri
 			}
 		}
 	}()
-
-    fmt.Println("Creating court with details:", c)
 
     var id string
 	err = tx.QueryRow(
@@ -149,7 +148,10 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 	var court entity.Court
 	// TODO - Add multiple photos to the court entity
 	// An array instead of a single photo
+    var courtPhotoId sql.NullString
+    var courtPhotoPath sql.NullString
 	var courtPhoto entity.CourtPhoto
+    var todayCourtSchedule entity.CourtSchedule
 	err := r.db.QueryRow(ctx, findCourtByIDQuery, id).Scan(
 		&court.ID,
 		&court.CompanyId,
@@ -159,11 +161,19 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 		&court.HourlyPrice,
 		&court.IsActive,
 		&court.Capacity,
-		&courtPhoto.ID,
-		&courtPhoto.Path,
+		&courtPhotoId,
+		&courtPhotoPath,
+        &todayCourtSchedule.OpeningTime,
+        &todayCourtSchedule.ClosingTime,
 	)
 
+    if courtPhotoId.Valid && courtPhotoPath.Valid {
+        courtPhoto.ID = courtPhotoId.String
+        courtPhoto.Path = courtPhotoPath.String
+    }
+
 	court.Photos = []entity.CourtPhoto{courtPhoto}
+    court.CourtSchedule = []entity.CourtSchedule{todayCourtSchedule}
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
