@@ -10,7 +10,7 @@ FROM courts c
 LEFT JOIN  (
     select court_id, count(*) as bookings_today
     from bookings
-    where start_time = CURRENT_DATE
+    where start_time::date = CURRENT_DATE
     group by court_id
 ) b on c.id = b.court_id
 WHERE c.company_id = $1
