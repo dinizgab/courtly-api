@@ -1,12 +1,9 @@
-INSERT INTO courts(id,
-                   company_id,
+INSERT INTO courts(company_id,
                    name,
                    description,
                    sport_type,
                    hourly_price,
                    is_active,
-                   opening_time,
-                   closing_time,
                    capacity)
 VALUES ($1,
         $2,
@@ -14,7 +11,5 @@ VALUES ($1,
         $4,
         $5,
         $6,
-        $7,
-        $8,
-        $9,
-        $10);
+        $7)
+RETURNING id;

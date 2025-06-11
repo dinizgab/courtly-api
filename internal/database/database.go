@@ -15,6 +15,7 @@ type Database interface {
 	Query(ctx context.Context, sql string, arguments ...any) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, arguments ...any) pgx.Row
 	CopyFrom(ctx context.Context, tableName string, columns []string, rowSrc [][]any) (int64, error)
+    Begin(ctx context.Context) (pgx.Tx, error)
 	Close()
 }
 
@@ -53,6 +54,15 @@ func (d *databaseImpl) QueryRow(ctx context.Context, sql string, arguments ...an
 
 func (d *databaseImpl) CopyFrom(ctx context.Context, tableName string, columns []string, rowSrc [][]any) (int64, error) {
 	return d.conn.CopyFrom(ctx, pgx.Identifier{tableName}, columns, pgx.CopyFromRows(rowSrc))
+}
+
+// TODO - Wrap transaction in a interface
+func (d *databaseImpl) Begin(ctx context.Context) (pgx.Tx, error) {
+    tx, err := d.conn.Begin(ctx)
+    if err != nil {
+        return nil, fmt.Errorf("Database.Begin: %w", err)
+    }
+    return tx, nil
 }
 
 func (d *databaseImpl) Close() {

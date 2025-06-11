@@ -38,15 +38,10 @@ func NewCourtUseCase(courtRepository repository.CourtRepository, uploadStorage s
 }
 
 func (u *courtUseCaseImpl) Create(ctx context.Context, court entity.Court, photos []*multipart.FileHeader) error {
-	court.ID = uuid.New().String()
-    // TODO - Return uuid from here
-    fmt.Println("Creating court with ID:", court)
-	err := u.courtRepository.Create(ctx, &court)
+	courtId, err := u.courtRepository.Create(ctx, &court)
 	if err != nil {
 		return err
 	}
-
-
 
 	var photosEntities []entity.CourtPhoto
 	for position, fh := range photos {
@@ -59,14 +54,14 @@ func (u *courtUseCaseImpl) Create(ctx context.Context, court entity.Court, photo
 			return fmt.Errorf("CourtUsecase.Create - could not open photo file: %w", err)
 		}
 
-		publicURL, err := u.uploadStorage.UploadFile(ctx, court.ID, filename, file)
+		publicURL, err := u.uploadStorage.UploadFile(ctx, courtId, filename, file)
 		if err != nil {
 			return err
 		}
 
 		photo := entity.CourtPhoto{
 			ID:       photoId,
-			CourtId:  court.ID,
+			CourtId:  courtId,
 			Path:     publicURL,
 			Position: position,
 			IsCover:  position == 0,

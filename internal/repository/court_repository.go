@@ -11,10 +11,11 @@ import (
 )
 
 const CourtPhotosName = "court_photos"
+const CourtSchedulesName = "court_schedules"
 
 type (
 	CourtRepository interface {
-		Create(ctx context.Context, c *entity.Court) error
+		Create(ctx context.Context, c *entity.Court) (string, error) 
 		InsertPhotos(ctx context.Context, c []entity.CourtPhoto) error
 		FindByID(ctx context.Context, id string) (entity.Court, error)
 		ListBookingsByID(ctx context.Context, id string) ([]entity.Booking, error)
@@ -55,26 +56,68 @@ func NewCourtRepository(db database.Database) CourtRepository {
 	}
 }
 
-func (r *courtRepositoryImpl) Create(ctx context.Context, c *entity.Court) error {
-	_, err := r.db.Exec(
+func (r *courtRepositoryImpl) Create(ctx context.Context, c *entity.Court) (string, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return "", fmt.Errorf("CourtRepository.Create: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			if rollbackErr := tx.Rollback(ctx); rollbackErr != nil {
+				fmt.Printf("CourtRepository.Create: could not rollback transaction: %v\n", rollbackErr)
+			}
+		}
+	}()
+
+    fmt.Println("Creating court with details:", c)
+
+    var id string
+	err = tx.QueryRow(
 		ctx,
 		createCourtQuery,
-		c.ID,
 		c.CompanyId,
 		c.Name,
 		c.Description,
 		c.SportType,
 		c.HourlyPrice,
 		c.IsActive,
-		c.OpeningTime,
-		c.ClosingTime,
 		c.Capacity,
+	).Scan(
+        &id,
 	)
 	if err != nil {
-		return fmt.Errorf("CourtRepository.Create: %w", err)
+		return "", fmt.Errorf("CourtRepository.Create: %w", err)
 	}
 
-	return nil
+    fmt.Println("Created court with ID:", id)
+
+	columns := []string{"court_id", "day_of_week", "is_open", "opening_time", "closing_time"}
+	rows := make([][]interface{}, 0, len(c.CourtSchedule))
+	for _, s := range c.CourtSchedule {
+		rows = append(rows, []interface{}{
+            id,
+			s.Weekday,
+			s.IsOpen,
+			s.OpeningTime,
+			s.ClosingTime,
+		})
+	}
+
+	_, err = tx.CopyFrom(
+		ctx,
+		pgx.Identifier{CourtSchedulesName},
+		columns,
+		pgx.CopyFromRows(rows),
+	)
+	if err != nil {
+		return "", fmt.Errorf("CourtRepository.Create: copy court_schedules: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return "", fmt.Errorf("CourtRepository.Create: commit tx: %w", err)
+	}
+
+	return id, nil
 }
 
 func (r *courtRepositoryImpl) InsertPhotos(ctx context.Context, photos []entity.CourtPhoto) error {
@@ -83,7 +126,6 @@ func (r *courtRepositoryImpl) InsertPhotos(ctx context.Context, photos []entity.
 	}
 
 	columns := []string{"id", "court_id", "path", "position", "is_cover"}
-
 	rows := make([][]interface{}, len(photos))
 	for i, p := range photos {
 		rows[i] = []any{
@@ -105,9 +147,9 @@ func (r *courtRepositoryImpl) InsertPhotos(ctx context.Context, photos []entity.
 
 func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.Court, error) {
 	var court entity.Court
-    // TODO - Add multiple photos to the court entity
-    // An array instead of a single photo
-    var courtPhoto entity.CourtPhoto
+	// TODO - Add multiple photos to the court entity
+	// An array instead of a single photo
+	var courtPhoto entity.CourtPhoto
 	err := r.db.QueryRow(ctx, findCourtByIDQuery, id).Scan(
 		&court.ID,
 		&court.CompanyId,
@@ -116,14 +158,12 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 		&court.SportType,
 		&court.HourlyPrice,
 		&court.IsActive,
-		&court.OpeningTime,
-		&court.ClosingTime,
 		&court.Capacity,
-        &courtPhoto.ID,
-        &courtPhoto.Path,
+		&courtPhoto.ID,
+		&courtPhoto.Path,
 	)
 
-    court.Photos = []entity.CourtPhoto{courtPhoto}
+	court.Photos = []entity.CourtPhoto{courtPhoto}
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -212,7 +252,7 @@ func (r *courtRepositoryImpl) ListCompanyCourtsShowcase(ctx context.Context, com
 	courts := make([]entity.Court, 0)
 	for rows.Next() {
 		var court entity.Court
-        var courtPhoto entity.CourtPhoto
+		var courtPhoto entity.CourtPhoto
 		err := rows.Scan(
 			&court.ID,
 			&court.Name,
@@ -220,16 +260,14 @@ func (r *courtRepositoryImpl) ListCompanyCourtsShowcase(ctx context.Context, com
 			&court.SportType,
 			&court.HourlyPrice,
 			&court.IsActive,
-			&court.OpeningTime,
-			&court.ClosingTime,
 			&court.Capacity,
-            &courtPhoto.ID,
-            &courtPhoto.Path,
+			&courtPhoto.ID,
+			&courtPhoto.Path,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: %w", err)
 		}
-        court.Photos = []entity.CourtPhoto{courtPhoto}
+		court.Photos = []entity.CourtPhoto{courtPhoto}
 
 		courts = append(courts, court)
 	}
@@ -276,8 +314,6 @@ func (r *courtRepositoryImpl) Update(ctx context.Context, id string, c entity.Co
 		c.SportType,
 		c.HourlyPrice,
 		c.IsActive,
-		c.OpeningTime,
-		c.ClosingTime,
 		c.Capacity,
 		id,
 	)

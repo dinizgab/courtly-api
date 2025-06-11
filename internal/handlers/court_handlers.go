@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"mime/multipart"
 	"strings"
@@ -35,6 +36,17 @@ func CreateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
 				photos = append(photos, fhArr[0])
 			}
 		}
+
+		var courtSchedule []entity.CourtSchedule
+		schedule := form.Value["schedule"][0]
+        if err := json.Unmarshal([]byte(schedule), &courtSchedule); err != nil {
+            log.Println(err)
+            c.JSON(400, gin.H{"error": "Invalid schedule input"})
+            return
+        }
+
+        fmt.Println("Court Schedule:", courtSchedule)
+        court.CourtSchedule = courtSchedule
 
 		err = uc.Create(c, court, photos)
 		if err != nil {
