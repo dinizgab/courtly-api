@@ -35,7 +35,7 @@ var (
 	findCompanyByIDQuery string
 	//go:embed sql/company/find_company_by_email.sql
 	findCompanyByEmailQuery string
-	//go:embed sql/company/find_company_by_slug.sql
+	//go:embed sql/company/find_company_by_id_showcase.sql
 	findCompanyByIDShowcaseQuery string
 	//go:embed sql/company/get_dashboard_info.sql
 	getDashboardInfoQuery string
