@@ -17,7 +17,7 @@ type (
 		Create(ctx context.Context, company entity.Company) (entity.Company, error)
 		FindByID(ctx context.Context, id string) (entity.Company, error)
 		FindByEmail(ctx context.Context, email string) (entity.Company, error)
-		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
+		FindByIDShowcase(ctx context.Context, slug string) (entity.Company, error)
 		GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error)
 		Update(ctx context.Context, id string, company entity.Company) error
 		Delete(ctx context.Context, id string) error
@@ -36,7 +36,7 @@ var (
 	//go:embed sql/company/find_company_by_email.sql
 	findCompanyByEmailQuery string
 	//go:embed sql/company/find_company_by_slug.sql
-	findCompanyBySlugQuery string
+	findCompanyByIDShowcaseQuery string
 	//go:embed sql/company/get_dashboard_info.sql
 	getDashboardInfoQuery string
 	//go:embed sql/company/update_company.sql
@@ -109,9 +109,9 @@ func (r *companyRepositoryImpl) FindByEmail(ctx context.Context, email string) (
 	return company, nil
 }
 
-func (r *companyRepositoryImpl) FindBySlug(ctx context.Context, slug string) (entity.Company, error) {
+func (r *companyRepositoryImpl) FindByIDShowcase(ctx context.Context, slug string) (entity.Company, error) {
 	var company entity.Company
-	err := r.db.QueryRow(ctx, findCompanyBySlugQuery, slug).Scan(
+	err := r.db.QueryRow(ctx, findCompanyByIDShowcaseQuery, slug).Scan(
 		&company.ID,
 		&company.Name,
 		&company.Address,

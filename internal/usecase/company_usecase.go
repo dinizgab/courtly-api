@@ -18,9 +18,9 @@ type (
 		Create(ctx context.Context, company entity.Company) (string, error)
 		GetDashboardInfo(ctx context.Context, companyId string) (entity.CompanyDashboard, error)
 		FindByID(ctx context.Context, id string) (entity.Company, error)
-		FindBySlug(ctx context.Context, slug string) (entity.Company, error)
 		Update(ctx context.Context, id string, company entity.Company) error
 		Delete(ctx context.Context, id string) error
+        FindByIDShowcase(ctx context.Context, id string) (entity.Company, error)
 	}
 
 	companyUsecaseImpl struct {
@@ -111,16 +111,6 @@ func (u *companyUsecaseImpl) FindByID(ctx context.Context, id string) (entity.Co
 	return company, nil
 }
 
-func (u *companyUsecaseImpl) FindBySlug(ctx context.Context, slug string) (entity.Company, error) {
-
-	company, err := u.companyRepository.FindBySlug(ctx, slug)
-	if err != nil {
-		return entity.Company{}, err
-	}
-
-	return company, nil
-}
-
 func (u *companyUsecaseImpl) Update(ctx context.Context, id string, company entity.Company) error {
 	company.Slug = strings.ToLower(strings.ReplaceAll(company.Name, " ", "-"))
 
@@ -140,3 +130,13 @@ func (u *companyUsecaseImpl) Delete(ctx context.Context, id string) error {
 
 	return nil
 }
+
+func (u *companyUsecaseImpl) FindByIDShowcase(ctx context.Context, id string) (entity.Company, error) {
+    company, err := u.companyRepository.FindByIDShowcase(ctx, id)
+    if err != nil {
+        return entity.Company{}, err
+    }
+
+    return company, nil
+}
+

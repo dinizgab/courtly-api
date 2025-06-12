@@ -105,6 +105,7 @@ func main() {
 
 	public := router.Group("/showcase")
 	{
+        public.GET("/companies/:id", handlers.FindCompanyByIDShowcase(companyUsecase))
 		public.GET("/companies/:id/courts", handlers.ListCompanyCourtShowcase(courtUsecase))
 		public.GET("/courts/:id", handlers.FindCourtByIDShowcase(courtUsecase))
 		public.GET("/courts/:id/available-slots", handlers.ListAvailableBookingSlots(courtUsecase))
