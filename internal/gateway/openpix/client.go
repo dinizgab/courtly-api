@@ -67,6 +67,8 @@ func (c *openPixClientImpl) CreateSubaccount(ctx context.Context, subaccount Sub
 	return out.Subaccount, err
 }
 
+// TODO - Check charges with a large amounts of money, its giving an error with split
+// {"error":"O valor total do split de pagamento não pode ser igual ou maior que o valor da cobrança menos a taxa esperada"}
 func (c *openPixClientImpl) CreateCharge(ctx context.Context, subaccountKey string, booking entity.Booking) (Charge, error) {
 	correlationId := fmt.Sprintf("booking-%s", booking.ID)
 	parsedPrice := int64(math.Round(booking.TotalPrice * 100))
@@ -105,6 +107,10 @@ func (c *openPixClientImpl) CreateCharge(ctx context.Context, subaccountKey stri
 		return Charge{}, fmt.Errorf("OpenPixClient.CreateCharge- failed to send request: %w", err)
 	}
 	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return Charge{}, fmt.Errorf("OpenPixClient.CreateCharge - failed to create charge with status: %s", res.Status)
+	}
 
 	var out CreateChargeResponse
 	err = json.NewDecoder(res.Body).Decode(&out)

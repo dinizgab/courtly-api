@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
+	"sort"
+	"time"
 
 	"github.com/dinizgab/booking-mvp/internal/database"
 	"github.com/dinizgab/booking-mvp/internal/entity"
@@ -16,7 +18,7 @@ const CourtSchedulesName = "court_schedules"
 
 type (
 	CourtRepository interface {
-		Create(ctx context.Context, c *entity.Court) (string, error) 
+		Create(ctx context.Context, c *entity.Court) (string, error)
 		InsertPhotos(ctx context.Context, c []entity.CourtPhoto) error
 		FindByID(ctx context.Context, id string) (entity.Court, error)
 		ListBookingsByID(ctx context.Context, id string) ([]entity.Booking, error)
@@ -45,6 +47,8 @@ var (
 	listCompanyCourtsShowcaseQuery string
 	//go:embed sql/court/list_available_booking_slots.sql
 	listAvailableBookingSlotsQuery string
+	//go:embed sql/court/list_court_photos.sql
+	listCourtPhotosQuery string
 	//go:embed sql/court/update_court.sql
 	updateCourtQuery string
 	//go:embed sql/court/delete_court.sql
@@ -70,7 +74,7 @@ func (r *courtRepositoryImpl) Create(ctx context.Context, c *entity.Court) (stri
 		}
 	}()
 
-    var id string
+	var id string
 	err = tx.QueryRow(
 		ctx,
 		createCourtQuery,
@@ -82,19 +86,17 @@ func (r *courtRepositoryImpl) Create(ctx context.Context, c *entity.Court) (stri
 		c.IsActive,
 		c.Capacity,
 	).Scan(
-        &id,
+		&id,
 	)
 	if err != nil {
 		return "", fmt.Errorf("CourtRepository.Create: %w", err)
 	}
 
-    fmt.Println("Created court with ID:", id)
-
 	columns := []string{"court_id", "day_of_week", "is_open", "opening_time", "closing_time"}
 	rows := make([][]interface{}, 0, len(c.CourtSchedule))
 	for _, s := range c.CourtSchedule {
 		rows = append(rows, []interface{}{
-            id,
+			id,
 			s.Weekday,
 			s.IsOpen,
 			s.OpeningTime,
@@ -148,32 +150,59 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 	var court entity.Court
 	// TODO - Add multiple photos to the court entity
 	// An array instead of a single photo
-    var courtPhotoId sql.NullString
-    var courtPhotoPath sql.NullString
-	var courtPhoto entity.CourtPhoto
-    var todayCourtSchedule entity.CourtSchedule
-	err := r.db.QueryRow(ctx, findCourtByIDQuery, id).Scan(
-		&court.ID,
-		&court.CompanyId,
-		&court.Name,
-		&court.Description,
-		&court.SportType,
-		&court.HourlyPrice,
-		&court.IsActive,
-		&court.Capacity,
-		&courtPhotoId,
-		&courtPhotoPath,
-        &todayCourtSchedule.OpeningTime,
-        &todayCourtSchedule.ClosingTime,
-	)
+	var courtPhotos []entity.CourtPhoto
+	var courtSchedule []entity.CourtSchedule
 
-    if courtPhotoId.Valid && courtPhotoPath.Valid {
-        courtPhoto.ID = courtPhotoId.String
-        courtPhoto.Path = courtPhotoPath.String
-    }
+	rows, err := r.db.Query(ctx, findCourtByIDQuery, id)
+	if err != nil {
+		return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: error querying court: %w", err)
+	}
+	defer rows.Close()
 
-	court.Photos = []entity.CourtPhoto{courtPhoto}
-    court.CourtSchedule = []entity.CourtSchedule{todayCourtSchedule}
+	for rows.Next() {
+		var daySchedule entity.CourtSchedule
+
+		err := rows.Scan(
+			&court.ID,
+			&court.CompanyId,
+			&court.Name,
+			&court.Description,
+			&court.SportType,
+			&court.HourlyPrice,
+			&court.IsActive,
+			&court.Capacity,
+            &daySchedule.Weekday,
+			&daySchedule.OpeningTime,
+			&daySchedule.ClosingTime,
+		)
+		if err != nil {
+			return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: error scanning court: %w", err)
+		}
+
+		courtSchedule = append(courtSchedule, daySchedule)
+	}
+
+	rows, err = r.db.Query(ctx, listCourtPhotosQuery, id)
+	if err != nil {
+		return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: error querying court photos: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var courtPhoto entity.CourtPhoto
+		err := rows.Scan(
+			&courtPhoto.ID,
+			&courtPhoto.CourtId,
+		)
+		if err != nil {
+			return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: error scanning court photo: %w", err)
+		}
+
+		courtPhotos = append(courtPhotos, courtPhoto)
+	}
+
+	court.Photos = courtPhotos
+	court.CourtSchedule = courtSchedule
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -259,32 +288,84 @@ func (r *courtRepositoryImpl) ListCompanyCourtsShowcase(ctx context.Context, com
 	}
 	defer rows.Close()
 
-	courts := make([]entity.Court, 0)
+	courtsMap := make(map[string]*entity.Court)
 	for rows.Next() {
-		var court entity.Court
-		var courtPhoto entity.CourtPhoto
-		err := rows.Scan(
-			&court.ID,
-			&court.Name,
-			&court.Description,
-			&court.SportType,
-			&court.HourlyPrice,
-			&court.IsActive,
-			&court.Capacity,
-			&courtPhoto.ID,
-			&courtPhoto.Path,
+		var (
+			courtID                  string
+			name                     string
+			description              string
+			sportType                string
+			hourlyPrice              float64
+			isActive                 bool
+			capacity                 int
+			openingTime, closingTime sql.NullString
+			photoID, photoPath       sql.NullString
 		)
-		if err != nil {
+
+		if err := rows.Scan(
+			&courtID,
+			&name,
+			&description,
+			&sportType,
+			&hourlyPrice,
+			&isActive,
+			&capacity,
+			&openingTime,
+			&closingTime,
+			&photoID,
+			&photoPath,
+		); err != nil {
 			return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: %w", err)
 		}
-		court.Photos = []entity.CourtPhoto{courtPhoto}
 
-		courts = append(courts, court)
+		court, exists := courtsMap[courtID]
+		if !exists {
+			court = &entity.Court{
+				ID:          courtID,
+				Name:        name,
+				Description: description,
+				SportType:   sportType,
+				HourlyPrice: hourlyPrice,
+				IsActive:    isActive,
+				Capacity:    capacity,
+			}
+
+			if openingTime.Valid && closingTime.Valid {
+                // TODO - Fix time parsing
+				parsedOpening, err1 := time.Parse("15:04:05.000000", openingTime.String)
+				parsedClosing, err2 := time.Parse("15:04:05.000000", closingTime.String)
+                if err1 != nil || err2 != nil {
+                    return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: error parsing time: %w", err1)
+                }
+
+				court.CourtSchedule = []entity.CourtSchedule{
+					{
+						OpeningTime: parsedOpening,
+						ClosingTime: parsedClosing,
+					},
+				}
+			}
+			courtsMap[courtID] = court
+		}
+
+		if photoID.Valid && photoPath.Valid {
+			court.Photos = append(court.Photos, entity.CourtPhoto{
+				ID:      photoID.String,
+				CourtId: courtID,
+				Path:    photoPath.String,
+			})
+		}
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: %w", err)
 	}
+
+	courts := make([]entity.Court, 0, len(courtsMap))
+	for _, c := range courtsMap {
+		courts = append(courts, *c)
+	}
+	sort.SliceStable(courts, func(i, j int) bool { return courts[i].ID < courts[j].ID })
 
 	return courts, nil
 }

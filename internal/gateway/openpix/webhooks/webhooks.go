@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TODO - Check its not updating booking status to confirmed if the payment is confirmed
 func ConfirmedPaymentWebhook(uc usecase.PaymentUsecase) func(*gin.Context) {
     return func(c *gin.Context) {
         var in openpix.ChargeWebhookEvent

@@ -167,6 +167,7 @@ func ListCompanyCourtShowcase(uc usecase.CourtUseCase) func(*gin.Context) {
 	}
 }
 
+// TODO - Check if this handler is really needed
 func FindCourtByIDShowcase(uc usecase.CourtUseCase) func(*gin.Context) {
 	return func(c *gin.Context) {
 		id := c.Param("id")
