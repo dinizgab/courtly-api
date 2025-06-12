@@ -19,7 +19,7 @@ func ConfirmedPaymentWebhook(uc usecase.PaymentUsecase) func(*gin.Context) {
             return
         }
 
-        //err = uc.ConfirmPayment(c.Request.Context(), in.Charge)
+        err = uc.ConfirmPayment(c.Request.Context(), in.Charge)
         if err != nil {
             fmt.Println("Error confirming payment:", err)
             c.JSON(500, gin.H{"status": "error", "message": "Failed to confirm payment"})
@@ -40,7 +40,7 @@ func ExpiredPaymentWebhook(uc usecase.PaymentUsecase) func(*gin.Context) {
             return
         }
 
-        //err = uc.ExpirePayment(c.Request.Context(), in.Charge)
+        err = uc.ExpirePayment(c.Request.Context(), in.Charge)
         if err != nil {
             fmt.Println("Error expiring payment:", err)
             c.JSON(500, gin.H{"status": "error", "message": "Failed to expire payment"})
