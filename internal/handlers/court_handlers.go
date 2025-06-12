@@ -128,6 +128,15 @@ func UpdateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
 		//	}
 		//}
 
+        var courtSchedule []entity.CourtSchedule
+        schedule := form.Value["schedule"][0]
+        if err := json.Unmarshal([]byte(schedule), &courtSchedule); err != nil {
+            log.Println(err)
+            c.JSON(400, gin.H{"error": "Invalid schedule input"})
+            return
+        }
+        court.CourtSchedule = courtSchedule
+
 		err = uc.Update(c.Request.Context(), id, court)
 		if err != nil {
 			log.Println(err)

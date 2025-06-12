@@ -4,7 +4,5 @@ UPDATE courts SET
     sport_type = $3,
     hourly_price = $4,
     is_active = $5,
-    opening_time = $6,
-    closing_time = $7,
-    capacity = $8
-WHERE id = $9
+    capacity = $6
+WHERE id = $7

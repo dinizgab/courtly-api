@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/dinizgab/booking-mvp/internal/database"
@@ -49,8 +50,12 @@ var (
 	listAvailableBookingSlotsQuery string
 	//go:embed sql/court/list_court_photos.sql
 	listCourtPhotosQuery string
+	//go:embed sql/court/list_court_schedule.sql
+	listCourtScheduleQuery string
 	//go:embed sql/court/update_court.sql
 	updateCourtQuery string
+    //go:embed sql/court/update_court_schedule.sql
+    updateCourtScheduleQuery string
 	//go:embed sql/court/delete_court.sql
 	deleteCourtQuery string
 )
@@ -153,7 +158,24 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 	var courtPhotos []entity.CourtPhoto
 	var courtSchedule []entity.CourtSchedule
 
-	rows, err := r.db.Query(ctx, findCourtByIDQuery, id)
+	err := r.db.QueryRow(ctx, findCourtByIDQuery, id).Scan(
+		&court.ID,
+		&court.CompanyId,
+		&court.Name,
+		&court.Description,
+		&court.SportType,
+		&court.HourlyPrice,
+		&court.IsActive,
+		&court.Capacity,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: court not found: %w", err)
+		}
+		return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: %w", err)
+	}
+
+	rows, err := r.db.Query(ctx, listCourtScheduleQuery, id)
 	if err != nil {
 		return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: error querying court: %w", err)
 	}
@@ -161,17 +183,10 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 
 	for rows.Next() {
 		var daySchedule entity.CourtSchedule
-
 		err := rows.Scan(
-			&court.ID,
-			&court.CompanyId,
-			&court.Name,
-			&court.Description,
-			&court.SportType,
-			&court.HourlyPrice,
-			&court.IsActive,
-			&court.Capacity,
-            &daySchedule.Weekday,
+			&daySchedule.ID,
+			&daySchedule.IsOpen,
+			&daySchedule.Weekday,
 			&daySchedule.OpeningTime,
 			&daySchedule.ClosingTime,
 		)
@@ -192,7 +207,7 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 		var courtPhoto entity.CourtPhoto
 		err := rows.Scan(
 			&courtPhoto.ID,
-			&courtPhoto.CourtId,
+			&courtPhoto.Path,
 		)
 		if err != nil {
 			return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: error scanning court photo: %w", err)
@@ -203,14 +218,6 @@ func (r *courtRepositoryImpl) FindByID(ctx context.Context, id string) (entity.C
 
 	court.Photos = courtPhotos
 	court.CourtSchedule = courtSchedule
-
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: court not found: %w", err)
-		}
-
-		return entity.Court{}, fmt.Errorf("CourtRepository.FindByID: %w", err)
-	}
 
 	return court, nil
 }
@@ -331,12 +338,12 @@ func (r *courtRepositoryImpl) ListCompanyCourtsShowcase(ctx context.Context, com
 			}
 
 			if openingTime.Valid && closingTime.Valid {
-                // TODO - Fix time parsing
+				// TODO - Fix time parsing
 				parsedOpening, err1 := time.Parse("15:04:05.000000", openingTime.String)
 				parsedClosing, err2 := time.Parse("15:04:05.000000", closingTime.String)
-                if err1 != nil || err2 != nil {
-                    return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: error parsing time: %w", err1)
-                }
+				if err1 != nil || err2 != nil {
+					return nil, fmt.Errorf("CourtRepository.ListCompanyCourtsShowcase: error parsing time: %w", err1)
+				}
 
 				court.CourtSchedule = []entity.CourtSchedule{
 					{
@@ -397,7 +404,18 @@ func (r *courtRepositoryImpl) ListAvailableBookingSlots(ctx context.Context, id 
 }
 
 func (r *courtRepositoryImpl) Update(ctx context.Context, id string, c entity.Court) error {
-	_, err := r.db.Exec(
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("CourtRepository.Update (begin tx): %w", err)
+	}
+
+	defer func() {
+		if tx != nil {
+			_ = tx.Rollback(ctx)
+		}
+	}()
+
+	_, err = r.db.Exec(
 		ctx,
 		updateCourtQuery,
 		c.Name,
@@ -411,6 +429,30 @@ func (r *courtRepositoryImpl) Update(ctx context.Context, id string, c entity.Co
 	if err != nil {
 		return fmt.Errorf("CourtRepository.Update: %w", err)
 	}
+
+	if len(c.CourtSchedule) > 0 {
+		valueStrings := make([]string, 0, len(c.CourtSchedule))
+		args := make([]interface{}, 0, len(c.CourtSchedule)*4)
+
+		for i, s := range c.CourtSchedule {
+			startIdx := i*4 + 1
+            valueStrings = append(valueStrings, fmt.Sprintf("($%d::uuid, $%d::boolean, $%d::time, $%d::time)", startIdx, startIdx+1, startIdx+2, startIdx+3))
+			args = append(args, s.ID, s.IsOpen, s.OpeningTime, s.ClosingTime)
+		}
+
+		query := fmt.Sprintf(updateCourtScheduleQuery, strings.Join(valueStrings, ","))
+
+		_, err = tx.Exec(ctx, query, args...)
+		if err != nil {
+			return fmt.Errorf("CourtRepository.Update (schedules): %w", err)
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("CourtRepository.Update (commit): %w", err)
+	}
+    // TODO - Switch this, this is bad practice
+    tx = nil
 
 	return nil
 }

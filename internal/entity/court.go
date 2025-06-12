@@ -28,6 +28,7 @@ type CourtPhoto struct {
 }
 
 type CourtSchedule struct {
+    ID          string    `json:"id"`
 	CourtId     string    `json:"court_id"`
     Weekday     int       `json:"weekday"`
 	IsOpen      bool      `json:"is_open"`
