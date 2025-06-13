@@ -68,7 +68,7 @@ func main() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:3000", "https://courtly-red.vercel.app"},
+		AllowOrigins: []string{"http://localhost:3000", "https://courtly-red.vercel.app", "https://courtly.com.br"},
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{
 			"Origin", "Authorization", "Content-Type", "Accept", "Access-Control-Request-Headers",
