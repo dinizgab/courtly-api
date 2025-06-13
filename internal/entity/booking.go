@@ -20,6 +20,11 @@ var (
 	ErrInvalidCodeFormat       = errors.New("verification code must be 6 digits")
 )
 
+type BookingFilter struct {
+    StartDate *time.Time
+    EndDate   *time.Time
+}
+
 type BookingConfirmationInfo struct {
 	GuestName        string  `json:"guest_name"`
 	GuestPhone       string  `json:"guest_phone"`

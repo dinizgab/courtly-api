@@ -12,7 +12,7 @@ type (
 		Create(ctx context.Context, booking entity.Booking) (string, error)
 		FindByID(ctx context.Context, id string) (entity.Booking, error)
 		FindByIDShowcase(ctx context.Context, id string) (entity.Booking, error)
-		ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error)
+		ListByCompanyID(ctx context.Context, companyId string, filter entity.BookingFilter) ([]entity.Booking, error)
 		ConfirmBooking(ctx context.Context, companyId string, bookingId string, verificationCode string) error
 		Update(ctx context.Context, booking entity.Booking) error
 		Delete(ctx context.Context, id string) error
@@ -66,8 +66,8 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 	return id, nil
 }
 
-func (u *bookingUsecaseImpl) ListByCompanyID(ctx context.Context, companyId string) ([]entity.Booking, error) {
-	bookings, err := u.bookingRepository.ListByCompanyID(ctx, companyId)
+func (u *bookingUsecaseImpl) ListByCompanyID(ctx context.Context, companyId string, filter entity.BookingFilter) ([]entity.Booking, error) {
+    bookings, err := u.bookingRepository.ListByCompanyID(ctx, companyId, filter)
 	if err != nil {
 		return bookings, err
 	}

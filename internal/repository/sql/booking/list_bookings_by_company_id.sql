@@ -12,6 +12,8 @@ FROM
     bookings b
 JOIN courts c
     ON c.id = b.court_id
-    AND c.company_id = $1
 WHERE
     b.company_id = $1
+    and b.start_time >= coalesce($2, b.start_time)
+    and b.end_time <= coalesce($3, b.end_time)
+    and b.status = 'confirmed'
