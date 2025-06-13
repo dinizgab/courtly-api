@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 	"time"
@@ -74,7 +75,7 @@ func (r *courtRepositoryImpl) Create(ctx context.Context, c *entity.Court) (stri
 	defer func() {
 		if err != nil {
 			if rollbackErr := tx.Rollback(ctx); rollbackErr != nil {
-				fmt.Printf("CourtRepository.Create: could not rollback transaction: %v\n", rollbackErr)
+				log.Printf("CourtRepository.Create: could not rollback transaction: %v\n", rollbackErr)
 			}
 		}
 	}()

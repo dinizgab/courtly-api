@@ -1,7 +1,7 @@
 package webhooks
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/dinizgab/booking-mvp/internal/gateway/openpix"
 	"github.com/dinizgab/booking-mvp/internal/usecase"
@@ -14,14 +14,14 @@ func ConfirmedPaymentWebhook(uc usecase.PaymentUsecase) func(*gin.Context) {
         var in openpix.ChargeWebhookEvent
         err := c.ShouldBindJSON(&in)
         if err != nil {
-            fmt.Println("Error binding JSON:", err)
+            log.Println("Error binding JSON:", err)
             c.JSON(400, gin.H{"status": "error", "message": "Invalid request data"})
             return
         }
 
         err = uc.ConfirmPayment(c.Request.Context(), in.Charge)
         if err != nil {
-            fmt.Println("Error confirming payment:", err)
+            log.Println("Error confirming payment:", err)
             c.JSON(500, gin.H{"status": "error", "message": "Failed to confirm payment"})
             return
         }
@@ -35,14 +35,14 @@ func ExpiredPaymentWebhook(uc usecase.PaymentUsecase) func(*gin.Context) {
         var in openpix.ChargeWebhookEvent
         err := c.ShouldBindJSON(&in)
         if err != nil {
-            fmt.Println("Error binding JSON:", err)
+            log.Println("Error binding JSON:", err)
             c.JSON(400, gin.H{"status": "error", "message": "Invalid request data"})
             return
         }
 
         err = uc.ExpirePayment(c.Request.Context(), in.Charge)
         if err != nil {
-            fmt.Println("Error expiring payment:", err)
+            log.Println("Error expiring payment:", err)
             c.JSON(500, gin.H{"status": "error", "message": "Failed to expire payment"})
             return
         }

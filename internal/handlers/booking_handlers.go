@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -15,10 +14,6 @@ func ListBookingsByCompany(uc usecase.BookingUsecase) func(*gin.Context) {
 		companyID := c.Query("company_id")
 		startDateStr := c.Query("start_date")
 		endDateStr := c.Query("end_date")
-
-        fmt.Println("Company ID:", companyID)
-        fmt.Println("Start Date:", startDateStr)
-        fmt.Println("End Date:", endDateStr)
 
 		var startDate, endDate *time.Time
         layout := time.RFC3339

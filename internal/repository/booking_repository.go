@@ -82,8 +82,6 @@ func (r *bookingRepositoryImpl) Create(ctx context.Context, booking entity.Booki
 
 func (r *bookingRepositoryImpl) ListByCompanyID(ctx context.Context, companyId string, filter entity.BookingFilter) ([]entity.Booking, error) {
 	bookings := make([]entity.Booking, 0)
-    fmt.Printf("BookingRepository.ListByCompanyID - companyId: %s, startDate: %v, endDate: %v\n", companyId, filter.StartDate, filter.EndDate)
-
 	rows, err := r.db.Query(
 		ctx,
 		listBookingsByCompanyIDQuery,

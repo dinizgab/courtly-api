@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"mime/multipart"
 	"strings"
@@ -45,7 +44,6 @@ func CreateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
             return
         }
 
-        fmt.Println("Court Schedule:", courtSchedule)
         court.CourtSchedule = courtSchedule
 
 		err = uc.Create(c, court, photos)
