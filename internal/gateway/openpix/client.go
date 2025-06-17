@@ -71,17 +71,18 @@ func (c *openPixClientImpl) CreateSubaccount(ctx context.Context, subaccount Sub
 // {"error":"O valor total do split de pagamento não pode ser igual ou maior que o valor da cobrança menos a taxa esperada"}
 func (c *openPixClientImpl) CreateCharge(ctx context.Context, subaccountKey string, booking entity.Booking) (Charge, error) {
 	correlationId := fmt.Sprintf("booking-%s", booking.ID)
-	parsedPrice := int64(math.Round(booking.TotalPrice * 100))
+	totalPrice := int64(math.Round(booking.TotalPrice * 100))
+	gasPrice := (totalPrice * 5 + 50) / 100
 	in := CreateChargeRequest{
 		CorrelationID: correlationId,
-		Value:         parsedPrice,
+		Value:         totalPrice,
 		Customer: Customer{
 			Name:  booking.GuestName,
 			Email: booking.GuestEmail,
 			Phone: booking.GuestPhone,
 		},
 		Splits: []Split{{
-			Value:     parsedPrice - 300,
+			Value:     totalPrice - gasPrice,
 			PixKey:    subaccountKey,
 			SplitType: "SPLIT_SUB_ACCOUNT",
 		}},
