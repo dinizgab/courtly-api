@@ -1,4 +1,5 @@
 SELECT
+    b.id,
     b.guest_name,
     b.guest_phone,
     b.guest_email,
@@ -7,7 +8,8 @@ SELECT
     b.start_time,
     b.end_time,
     b.total_price,
-    b.verification_code
+    b.verification_code,
+    b.cancel_token_hash
 FROM
     bookings b
 JOIN courts c

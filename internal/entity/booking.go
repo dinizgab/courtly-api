@@ -21,11 +21,12 @@ var (
 )
 
 type BookingFilter struct {
-    StartDate *time.Time
-    EndDate   *time.Time
+	StartDate *time.Time
+	EndDate   *time.Time
 }
 
 type BookingConfirmationInfo struct {
+	ID               string  `json:"id"`
 	GuestName        string  `json:"guest_name"`
 	GuestPhone       string  `json:"guest_phone"`
 	GuestEmail       string  `json:"guest_email"`
@@ -35,32 +36,35 @@ type BookingConfirmationInfo struct {
 	BookingInterval  string  `json:"booking_interval"`
 	TotalPrice       float64 `json:"total_price"`
 	VerificationCode string  `json:"verification_code"`
+	CancelTokenHash  string  `json:"cancel_token_hash"`
 }
 
 type Booking struct {
-	ID               string        `json:"id"`
-	CourtId          string        `json:"court_id"`
-	StartTime        time.Time     `json:"start_time"`
-	EndTime          time.Time     `json:"end_time"`
-	CreatedAt        time.Time     `json:"created_at"`
-	Status           BookingStatus `json:"status"`
-	GuestName        string        `json:"guest_name"`
-	GuestPhone       string        `json:"guest_phone"`
-	GuestEmail       string        `json:"guest_email"`
-	VerificationCode string        `json:"verification_code"`
-	TotalPrice       float64       `json:"total_price"`
-	Court            *Court        `json:"court,omitempty"`
+	ID                       string        `json:"id"`
+	CourtId                  string        `json:"court_id"`
+	StartTime                time.Time     `json:"start_time"`
+	EndTime                  time.Time     `json:"end_time"`
+	CreatedAt                time.Time     `json:"created_at"`
+	Status                   BookingStatus `json:"status"`
+	GuestName                string        `json:"guest_name"`
+	GuestPhone               string        `json:"guest_phone"`
+	GuestEmail               string        `json:"guest_email"`
+	VerificationCode         string        `json:"verification_code"`
+	TotalPrice               float64       `json:"total_price"`
+	CancelTokenHash          string        `json:"cancel_token_hash"`
+	CancelTokenHashExpiresAt time.Time     `json:"cancel_token_hash_expires_at"`
+	Court                    *Court        `json:"court,omitempty"`
 }
 
 func (b Booking) DurationInHours() float64 {
-    if b.EndTime.IsZero() || b.StartTime.IsZero() {
-        return 0
-    }
-    duration := b.EndTime.Sub(b.StartTime).Hours()
-    if duration < 0 {
-        return 0
-    }
-    return duration
+	if b.EndTime.IsZero() || b.StartTime.IsZero() {
+		return 0
+	}
+	duration := b.EndTime.Sub(b.StartTime).Hours()
+	if duration < 0 {
+		return 0
+	}
+	return duration
 }
 
 func GenerateVerificationCode() string {
