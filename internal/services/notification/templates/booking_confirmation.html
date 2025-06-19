@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Confirmação de Reserva - QuadrasFácil</title>
+  <title>Confirmação de Reserva - Courtly</title>
   <style>
     /* Reset styles for email clients */
     body, html {
@@ -229,8 +229,9 @@
         <strong>Instruções importantes:</strong>
         <ul>
           <li>Chegue com 15 minutos de antecedência</li>
-          <li>O pagamento será realizado no local</li>
-          <li>Traga seu próprio equipamento ou verifique a disponibilidade de aluguel no local</li>
+          <li>O reembolso só será feito até 3 horas antes do horário agendado.
+            Para solicitar, <a href="https://courtly.com.br/booking/cancel?id={{ .ID | urlquery }}&token={{ .CancelTokenHash | urlquery }}">clique aqui</a>.
+          </li>
         </ul>
       </div>
      
@@ -247,7 +248,7 @@
       </div>
       
       <div class="footer-text">
-        © 2025 QuadrasFácil. Todos os direitos reservados.
+        © 2025 Courtly. Todos os direitos reservados.
       </div>
       
       <div class="footer-text">
@@ -255,8 +256,8 @@
       </div>
       
       <div class="footer-text">
-        <a href="mailto:contato@quadrasfacil.com" style="color: #16a34a; text-decoration: none;">
-          contato@quadrasfacil.com
+        <a href="mailto:suporte@courtly.com.br" style="color: #16a34a; text-decoration: none;">
+          suporte@courtly.com.br
         </a>
         |
         <a href="tel:+551199999999" style="color: #16a34a; text-decoration: none;">

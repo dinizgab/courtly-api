@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/fs"
+	"net/url"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 )
@@ -22,18 +23,24 @@ type htmlRendererImpl struct {
 }
 
 func NewHTMLRender(fsys fs.FS) (Renderer, error) {
-    if fsys == nil {
-        fsys = templateFs
-    }
+	if fsys == nil {
+		fsys = templateFs
+	}
 
-	tpl, err := template.ParseFS(fsys, "templates/booking_confirmation.html")
+	funcMap := template.FuncMap{
+		"urlquery": url.QueryEscape,
+	}
+
+	tpl, err := template.New("booking_confirmation.html").
+		Funcs(funcMap).
+		ParseFS(fsys, "templates/booking_confirmation.html")
 	if err != nil {
 		return nil, fmt.Errorf("Renderer.Render - failed to read template file: %w", err)
 	}
 
 	return &htmlRendererImpl{
-        tpl: tpl,
-    }, nil
+		tpl: tpl,
+	}, nil
 }
 
 func (r *htmlRendererImpl) Render(booking entity.BookingConfirmationInfo) (string, error) {
