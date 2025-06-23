@@ -111,6 +111,7 @@ func (uc *pixGatewayUsecaseImpl) ConfirmPayment(ctx context.Context, charge open
 		BookingInterval:  fmt.Sprintf("%s - %s", booking.StartTime.Format("15:04"), booking.EndTime.Format("15:04")),
 		TotalPrice:       booking.TotalPrice,
 		VerificationCode: booking.VerificationCode,
+        CancelTokenHash: booking.CancelTokenHash,
 	}
 
 	err = uc.notificationService.Send(ctx, bookingEmailInfo)

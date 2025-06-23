@@ -8,6 +8,7 @@ INSERT INTO bookings(
     status,
     verification_code,
     total_price,
+    cancel_token_hash,
     company_id
 )
 VALUES(
@@ -20,6 +21,7 @@ $6,
 $7,
 $8,
 $9,
-$10
+$10,
+$11
 )
 RETURNING id

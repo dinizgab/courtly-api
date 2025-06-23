@@ -2,6 +2,10 @@ package usecase
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"fmt"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/repository"
@@ -49,6 +53,15 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 		return "", err
 	}
 
+    raw := make([]byte, 32)
+    _, err = rand.Read(raw)
+    if err != nil {
+        return "", fmt.Errorf("BookingUsecase.Create: failed to generate cancel token hash: %w", err)
+    }
+    token := base64.RawURLEncoding.EncodeToString(raw)
+    sum := sha256.Sum256([]byte(token))
+
+    booking.CancelTokenHash = base64.RawURLEncoding.EncodeToString(sum[:])
 	booking.TotalPrice = court.HourlyPrice * booking.DurationInHours()
 
 	id, err := u.bookingRepository.Create(ctx, booking)

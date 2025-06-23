@@ -67,6 +67,7 @@ func (r *bookingRepositoryImpl) Create(ctx context.Context, booking entity.Booki
 		booking.Status,
 		booking.VerificationCode,
 		booking.TotalPrice,
+        booking.CancelTokenHash,
 		booking.Court.CompanyId,
 	)
 
