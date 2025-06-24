@@ -29,6 +29,10 @@ var (
 	expirePaymentQuery string
     //go:embed sql/payment/get_booking_charge_information_by_booking_id.sql
     getBookingChargeInformationByBookingId string
+    //go:embed sql/payment/get_payment_by_booking_id.sql
+    getPaymentByBoookingIdQuery string
+    //go:embed sql/payment/save_refund_request.sql
+    saveRefundRequestQuery string
 )
 
 type PaymentRepository interface {
@@ -40,6 +44,8 @@ type PaymentRepository interface {
     CreateWithdrawRequest(ctx context.Context, companyId string, withdraw openpix.Withdraw) error
 	ExpirePayment(ctx context.Context, charge openpix.Charge) error
     GetBookingChargeInformation(ctx context.Context, id string) (entity.Payment, error)
+    GetPaymentByBookingID(ctx context.Context, id string) (entity.Payment, error)
+    SaveRefundRequest(ctx context.Context, bookingId string, refund openpix.Refund) error
 }
 
 type paymentRepositoryImpl struct {
@@ -163,3 +169,39 @@ func (r *paymentRepositoryImpl) ExpirePayment(ctx context.Context, charge openpi
 
 	return nil
 }
+
+func (r *paymentRepositoryImpl) GetPaymentByBookingID(ctx context.Context, id string) (entity.Payment, error) {
+    var payment entity.Payment
+    err := r.db.QueryRow(ctx, getPaymentByBoookingIdQuery, id).Scan(
+        &payment.ID,
+        &payment.CorrelationID,
+        &payment.BookingID,
+        &payment.PaidAt,
+    )
+    if err != nil {
+        if err == pgx.ErrNoRows {
+            return entity.Payment{}, fmt.Errorf("paymentRepositoryImpl.GetPaymentByBookingID - payment not found: %w", err)
+        }
+        return entity.Payment{}, fmt.Errorf("paymentRepositoryImpl.GetPaymentByBookingID - failed to get payment by booking ID: %w", err)
+    }
+
+    return payment, nil
+}
+
+func (r *paymentRepositoryImpl) SaveRefundRequest(ctx context.Context, bookingId string, refund openpix.Refund) error {
+    _, err := r.db.Exec(
+        ctx,
+        saveRefundRequestQuery,
+        bookingId,
+        refund.EndToEndID,
+        refund.Status,
+        // TODO = Check if this variable name 
+        refund.RefundedAt,
+    )
+    if err != nil {
+        return fmt.Errorf("paymentRepositoryImpl.SaveRefundRequest - failed to save refund request: %w", err)
+    }
+
+    return nil
+}
+

@@ -22,6 +22,7 @@ type PaymentUsecase interface {
 	CreateWithdrawRequest(ctx context.Context, companyId string) error
 	ExpirePayment(ctx context.Context, charge openpix.Charge) error
 	GetBookingChargeInformation(ctx context.Context, id string) (entity.Payment, error)
+	RefundCharge(ctx context.Context, bookingId string) error
 }
 
 type pixGatewayUsecaseImpl struct {
@@ -192,4 +193,23 @@ func (uc *pixGatewayUsecaseImpl) GetBookingChargeInformation(ctx context.Context
 	}
 
 	return payment, nil
+}
+
+func (uc *pixGatewayUsecaseImpl) RefundCharge(ctx context.Context, bookingId string) error {
+	payment, err := uc.repo.GetPaymentByBookingID(ctx, bookingId)
+	if err != nil {
+		return err
+	}
+
+	refund, err := uc.pixClient.RefundCharge(ctx, payment)
+	if err != nil {
+		return err
+	}
+
+    err = uc.repo.SaveRefundRequest(ctx, bookingId, refund)
+    if err != nil {
+        return err
+    }
+
+	return nil
 }

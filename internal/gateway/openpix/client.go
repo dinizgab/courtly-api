@@ -17,6 +17,7 @@ type OpenPixClient interface {
 	CreateCharge(ctx context.Context, subaccountKey string, booking entity.Booking) (Charge, error)
 	GetCompanyBalance(ctx context.Context, pixKey string) (int64, error)
 	WithdrawSubaccount(ctx context.Context, pixKey string) (Withdraw, error)
+    RefundCharge(ctx context.Context, payment entity.Payment) (Refund, error)
 }
 
 type openPixClientImpl struct {
@@ -181,4 +182,46 @@ func (c *openPixClientImpl) WithdrawSubaccount(ctx context.Context, pixKey strin
 	}
 
 	return out.Withdraw, nil
+}
+
+func (c *openPixClientImpl) RefundCharge(ctx context.Context, payment entity.Payment) (Refund, error) {
+    refundCorrelationID := fmt.Sprintf("refund-%s", payment.ID)
+    in := Refund{
+        EndToEndID: payment.ID,
+        CorrelationID: refundCorrelationID,
+    }
+	body, err := json.Marshal(in)
+	if err != nil {
+		return Refund{}, fmt.Errorf("OpenPixClient.CreateSubaccount - failed to marshal request: %w", err)
+	}
+
+    url := fmt.Sprintf("%s/api/v1/charge/%s/refund", c.baseURL, payment.CorrelationID)
+
+    req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
+    if err != nil {
+        return Refund{}, fmt.Errorf("OpenPixClient.RefundCharge - failed to create request: %w", err)
+    }
+
+    req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("Authorization", c.appId)
+
+    res, err := c.httpClient.Do(req)
+    if err != nil {
+        return Refund{}, fmt.Errorf("OpenPixClient.RefundCharge - failed to send request: %w", err)
+    }
+    defer res.Body.Close()
+
+    if res.StatusCode != http.StatusOK {
+        return Refund{}, fmt.Errorf("OpenPixClient.RefundCharge - failed to refund with status: %s", res.Status)
+    }
+
+    var out struct {
+        Refund Refund `json:"refund"`
+    }
+    err = json.NewDecoder(res.Body).Decode(&out)
+    if err != nil {
+        return Refund{}, fmt.Errorf("OpenPixClient.RefundCharge - failed to decode response: %w", err)
+    }
+
+    return out.Refund, nil
 }

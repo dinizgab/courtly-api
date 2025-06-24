@@ -21,6 +21,7 @@ type (
 		FindByIDShowcase(ctx context.Context, id string) (entity.Booking, error)
 		ListByCompanyID(ctx context.Context, companyId string, filter entity.BookingFilter) ([]entity.Booking, error)
 		ConfirmBooking(ctx context.Context, companyId string, bookingId string) error
+        CancelBooking(ctx context.Context, id string) error
 		Update(ctx context.Context, booking entity.Booking) error
 		Delete(ctx context.Context, id string) error
         GetCancelTokenInfo(ctx context.Context, bookingId string) (entity.Booking, error)
@@ -42,6 +43,8 @@ var (
 	findBookingByIDShowcaseQuery string
 	//go:embed sql/booking/confirm_booking.sql
 	confirmBookingQuery string
+	//go:embed sql/booking/cancel_booking.sql
+	cancelBookingQuery string
 	//go:embed sql/booking/update_booking.sql
 	updateBookingQuery string
 	//go:embed sql/booking/delete_booking.sql
@@ -192,6 +195,15 @@ func (r *bookingRepositoryImpl) ConfirmBooking(ctx context.Context, companyId st
 	}
 
 	return nil
+}
+
+func (r *bookingRepositoryImpl) CancelBooking(ctx context.Context, id string) error {
+    _, err := r.db.Exec(ctx, cancelBookingQuery, id)
+    if err != nil {
+        return fmt.Errorf("BookingRepository.CancelBooking: %w", err)
+    }
+
+    return nil
 }
 
 func (r *bookingRepositoryImpl) Update(ctx context.Context, booking entity.Booking) error {

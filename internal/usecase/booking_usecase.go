@@ -118,8 +118,6 @@ func (u *bookingUsecaseImpl) ConfirmBooking(ctx context.Context, companyId strin
 }
 
 func (u *bookingUsecaseImpl) CancelBooking(ctx context.Context, bookingId string, cancelToken string) error {
-	// TODO - Check if cancelToken is valid
-	// TODO - Create a refund request
 	booking, err := u.bookingRepository.GetCancelTokenInfo(ctx, bookingId)
 	if err != nil {
 		return err
@@ -133,7 +131,15 @@ func (u *bookingUsecaseImpl) CancelBooking(ctx context.Context, bookingId string
         return fmt.Errorf("BookingUsecase.CancelBooking - invalid cancel token")
 	}
 
-	//err := u.paymentUsecase.RefundCharge(ctx, bookingId)
+	err = u.paymentUsecase.RefundCharge(ctx, bookingId)
+    if err != nil {
+        return err
+    }
+
+    err = u.bookingRepository.CancelBooking(ctx, bookingId)
+    if err != nil {
+        return err
+    }
 
 	return nil
 }
