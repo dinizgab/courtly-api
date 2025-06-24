@@ -1,6 +1,9 @@
 package entity
 
 import (
+	crand "crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"math/rand/v2"
 	"time"
@@ -18,6 +21,7 @@ var (
 	ErrInvalidVerificationCode = errors.New("invalid verification code")
 	ErrBookingAlreadyConfirmed = errors.New("booking already confirmed")
 	ErrInvalidCodeFormat       = errors.New("verification code must be 6 digits")
+	ErrBookingNotFound         = errors.New("booking not found")
 )
 
 type BookingFilter struct {
@@ -36,7 +40,7 @@ type BookingConfirmationInfo struct {
 	BookingInterval  string  `json:"booking_interval"`
 	TotalPrice       float64 `json:"total_price"`
 	VerificationCode string  `json:"verification_code"`
-	CancelTokenHash  string  `json:"cancel_token_hash"`
+	CancelToken      string  `json:"cancel_token"`
 }
 
 type Booking struct {
@@ -76,4 +80,17 @@ func GenerateVerificationCode() string {
 	}
 
 	return string(code)
+}
+
+func GenerateCancelToken() (string, error) {
+	b := make([]byte, 32)
+	if _, err := crand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
+
+func HashCancelToken(token string) string {
+	h := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(h[:])
 }

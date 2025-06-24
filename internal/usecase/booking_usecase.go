@@ -2,10 +2,8 @@ package usecase
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
+	"time"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
 	"github.com/dinizgab/booking-mvp/internal/repository"
@@ -18,15 +16,16 @@ type (
 		FindByIDShowcase(ctx context.Context, id string) (entity.Booking, error)
 		ListByCompanyID(ctx context.Context, companyId string, filter entity.BookingFilter) ([]entity.Booking, error)
 		ConfirmBooking(ctx context.Context, companyId string, bookingId string, verificationCode string) error
+		CancelBooking(ctx context.Context, bookingId string, cancelToken string) error
 		Update(ctx context.Context, booking entity.Booking) error
 		Delete(ctx context.Context, id string) error
 	}
 
 	bookingUsecaseImpl struct {
-		bookingRepository   repository.BookingRepository
-		paymentUsecase      PaymentUsecase
-		companyUsecase      CompanyUsecase
-		courtUsecase        CourtUseCase
+		bookingRepository repository.BookingRepository
+		paymentUsecase    PaymentUsecase
+		companyUsecase    CompanyUsecase
+		courtUsecase      CourtUseCase
 	}
 )
 
@@ -37,10 +36,10 @@ func NewBookingUsecase(
 	courtUsecase CourtUseCase,
 ) BookingUsecase {
 	return &bookingUsecaseImpl{
-		bookingRepository:   bookingRepository,
-		paymentUsecase:      paymentUsecase,
-		companyUsecase:      companyUsecase,
-		courtUsecase:        courtUsecase,
+		bookingRepository: bookingRepository,
+		paymentUsecase:    paymentUsecase,
+		companyUsecase:    companyUsecase,
+		courtUsecase:      courtUsecase,
 	}
 }
 
@@ -52,16 +51,6 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 	if err != nil {
 		return "", err
 	}
-
-    raw := make([]byte, 32)
-    _, err = rand.Read(raw)
-    if err != nil {
-        return "", fmt.Errorf("BookingUsecase.Create: failed to generate cancel token hash: %w", err)
-    }
-    token := base64.RawURLEncoding.EncodeToString(raw)
-    sum := sha256.Sum256([]byte(token))
-
-    booking.CancelTokenHash = base64.RawURLEncoding.EncodeToString(sum[:])
 	booking.TotalPrice = court.HourlyPrice * booking.DurationInHours()
 
 	id, err := u.bookingRepository.Create(ctx, booking)
@@ -80,7 +69,7 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 }
 
 func (u *bookingUsecaseImpl) ListByCompanyID(ctx context.Context, companyId string, filter entity.BookingFilter) ([]entity.Booking, error) {
-    bookings, err := u.bookingRepository.ListByCompanyID(ctx, companyId, filter)
+	bookings, err := u.bookingRepository.ListByCompanyID(ctx, companyId, filter)
 	if err != nil {
 		return bookings, err
 	}
@@ -124,6 +113,27 @@ func (u *bookingUsecaseImpl) ConfirmBooking(ctx context.Context, companyId strin
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (u *bookingUsecaseImpl) CancelBooking(ctx context.Context, bookingId string, cancelToken string) error {
+	// TODO - Check if cancelToken is valid
+	// TODO - Create a refund request
+	booking, err := u.bookingRepository.GetCancelTokenInfo(ctx, bookingId)
+	if err != nil {
+		return err
+	}
+
+	if time.Now().After(booking.CancelTokenHashExpiresAt) {
+        return fmt.Errorf("BookingUsecase.CancelBooking - token expired")
+	}
+
+	if entity.HashCancelToken(cancelToken) != booking.CancelTokenHash {
+        return fmt.Errorf("BookingUsecase.CancelBooking - invalid cancel token")
+	}
+
+	//err := u.paymentUsecase.RefundCharge(ctx, bookingId)
 
 	return nil
 }

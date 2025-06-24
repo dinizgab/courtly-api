@@ -14,6 +14,7 @@ import (
 type (
 	BookingRepository interface {
 		ports.BookingSummaryReader
+		ports.BookingCancelTokenWriter
 
 		Create(ctx context.Context, booking entity.Booking) (string, error)
 		FindByID(ctx context.Context, id string) (entity.Booking, error)
@@ -22,6 +23,7 @@ type (
 		ConfirmBooking(ctx context.Context, companyId string, bookingId string) error
 		Update(ctx context.Context, booking entity.Booking) error
 		Delete(ctx context.Context, id string) error
+        GetCancelTokenInfo(ctx context.Context, bookingId string) (entity.Booking, error)
 	}
 
 	bookingRepositoryImpl struct {
@@ -46,6 +48,10 @@ var (
 	deleteBookingQuery string
 	//go:embed sql/booking/get_booking_confirmation_info.sql
 	getBookingConfirmationInfoQuery string
+	//go:embed sql/booking/set_cancel_token_hash.sql
+	setCancelTokenHashQuery string
+    //go:embed sql/booking/get_cancel_token_info.sql
+    getCancelTokenInfoQuery string
 )
 
 func NewBookingRepository(db database.Database) BookingRepository {
@@ -67,7 +73,7 @@ func (r *bookingRepositoryImpl) Create(ctx context.Context, booking entity.Booki
 		booking.Status,
 		booking.VerificationCode,
 		booking.TotalPrice,
-        booking.CancelTokenHash,
+		booking.CancelTokenHash,
 		booking.Court.CompanyId,
 	)
 
@@ -225,6 +231,28 @@ func (r *bookingRepositoryImpl) GetBookingSummary(ctx context.Context, bookingId
 
 	court.Company = &company
 	booking.Court = &court
+
+	return booking, nil
+}
+
+func (r *bookingRepositoryImpl) SetCancelTokenHash(ctx context.Context, bookingId string, cancelTokenHash string) error {
+	_, err := r.db.Exec(ctx, setCancelTokenHashQuery, cancelTokenHash, bookingId)
+	if err != nil {
+		return fmt.Errorf("BookingRepository.SetCancelTokenHash: %w", err)
+	}
+
+	return nil
+}
+
+func (r *bookingRepositoryImpl) GetCancelTokenInfo(ctx context.Context, bookingId string) (entity.Booking, error) {
+	var booking entity.Booking
+	err := r.db.QueryRow(ctx, getCancelTokenInfoQuery, bookingId).Scan(&booking.CancelTokenHash, &booking.CancelTokenHashExpiresAt)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return booking, fmt.Errorf("BookingRepository.GetCancelTokenInfo: booking not found")
+		}
+		return booking, fmt.Errorf("BookingRepository.GetCancelTokenInfo: %w", err)
+	}
 
 	return booking, nil
 }

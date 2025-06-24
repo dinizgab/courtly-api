@@ -60,7 +60,13 @@ func main() {
 	bookingRepository := repository.NewBookingRepository(db)
 	paymentRepository := repository.NewPaymentRepository(db)
 
-	pixPaymentUsecase := usecase.NewPixGatewayService(pixGatewayClient, bookingRepository, paymentRepository, emailService)
+	pixPaymentUsecase := usecase.NewPixGatewayService(
+        pixGatewayClient,
+        bookingRepository,
+        bookingRepository,
+        paymentRepository,
+        emailService,
+    )
 	courtUsecase := usecase.NewCourtUseCase(courtRepository, storageUploadService)
 	companyUsecase := usecase.NewCompanyUsecase(companyRepository, authService, pixPaymentUsecase)
 	bookingUsecase := usecase.NewBookingUsecase(bookingRepository, pixPaymentUsecase, companyUsecase, courtUsecase)
@@ -119,7 +125,10 @@ func main() {
 	{
 		webhookRouter.POST("/pix/confirmed", webhooks.ConfirmedPaymentWebhook(pixPaymentUsecase))
 		webhookRouter.POST("/pix/expired", webhooks.ExpiredPaymentWebhook(pixPaymentUsecase))
+        webhookRouter.POST("/bookings/cancel", webhooks.CancelBookingWebhook(bookingUsecase))
 	}
+
+    router.POST("/bookings/cancel", handlers.CancelBooking(bookingUsecase))
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.API.Port),

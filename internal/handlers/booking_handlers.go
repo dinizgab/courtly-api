@@ -16,12 +16,12 @@ func ListBookingsByCompany(uc usecase.BookingUsecase) func(*gin.Context) {
 		endDateStr := c.Query("end_date")
 
 		var startDate, endDate *time.Time
-        layout := time.RFC3339
+		layout := time.RFC3339
 
 		if startDateStr != "" {
 			t, err := time.Parse(layout, startDateStr)
 			if err != nil {
-                log.Println(err)
+				log.Println(err)
 				c.JSON(400, gin.H{"error": "Invalid start_date format"})
 				return
 			}
@@ -31,7 +31,7 @@ func ListBookingsByCompany(uc usecase.BookingUsecase) func(*gin.Context) {
 		if endDateStr != "" {
 			t, err := time.Parse(layout, endDateStr)
 			if err != nil {
-                log.Println(err)
+				log.Println(err)
 				c.JSON(400, gin.H{"error": "Invalid end_date format"})
 				return
 			}
@@ -43,7 +43,7 @@ func ListBookingsByCompany(uc usecase.BookingUsecase) func(*gin.Context) {
 			EndDate:   endDate,
 		}
 
-        bookings, err := uc.ListByCompanyID(c.Request.Context(), companyID, filter)
+		bookings, err := uc.ListByCompanyID(c.Request.Context(), companyID, filter)
 		if err != nil {
 			log.Println(err)
 			c.JSON(500, gin.H{"error": "Failed to list courts"})
@@ -110,5 +110,30 @@ func FindBookingByIDShowcase(uc usecase.BookingUsecase) func(*gin.Context) {
 		}
 
 		c.JSON(200, booking)
+	}
+}
+
+func CancelBooking(uc usecase.BookingUsecase) func(*gin.Context) {
+	return func(c *gin.Context) {
+        id := c.Query("id")
+		token := c.Query("token")
+		if token == "" {
+			log.Println("Token is required")
+			c.JSON(400, gin.H{"error": "Token is required"})
+			return
+		}
+
+		err := uc.CancelBooking(c.Request.Context(), id, token)
+		if err != nil {
+			log.Println(err)
+			if err == entity.ErrBookingNotFound {
+				c.JSON(404, gin.H{"error": "Booking not found"})
+				return
+			}
+
+			c.JSON(500, gin.H{"error": "Failed to cancel booking"})
+			return
+		}
+		c.JSON(200, gin.H{"message": "Booking cancelled successfully"})
 	}
 }

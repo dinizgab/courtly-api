@@ -19,27 +19,30 @@ type PaymentUsecase interface {
 	ConfirmPayment(ctx context.Context, charge openpix.Charge) error
 	GetBookingPaymentStatusByID(ctx context.Context, id string) (string, error)
 	GetCompanyBalance(ctx context.Context, id string) (int64, error)
-    CreateWithdrawRequest(ctx context.Context, companyId string) error
+	CreateWithdrawRequest(ctx context.Context, companyId string) error
 	ExpirePayment(ctx context.Context, charge openpix.Charge) error
-    GetBookingChargeInformation(ctx context.Context, id string) (entity.Payment, error)
+	GetBookingChargeInformation(ctx context.Context, id string) (entity.Payment, error)
 }
 
 type pixGatewayUsecaseImpl struct {
 	pixClient           openpix.OpenPixClient
-    bookingRepo         ports.BookingSummaryReader
+	summaryReader       ports.BookingSummaryReader
+	tokenWriter         ports.BookingCancelTokenWriter
 	repo                repository.PaymentRepository
 	notificationService notification.Sender
 }
 
 func NewPixGatewayService(
 	pixClient openpix.OpenPixClient,
-	bookingRepo ports.BookingSummaryReader,
+	summaryReader ports.BookingSummaryReader,
+	tokenWriter ports.BookingCancelTokenWriter,
 	repo repository.PaymentRepository,
 	notificationService notification.Sender,
 ) PaymentUsecase {
 	return &pixGatewayUsecaseImpl{
 		pixClient:           pixClient,
-		bookingRepo:         bookingRepo,
+		summaryReader:       summaryReader,
+		tokenWriter:         tokenWriter,
 		repo:                repo,
 		notificationService: notificationService,
 	}
@@ -95,12 +98,21 @@ func (uc *pixGatewayUsecaseImpl) ConfirmPayment(ctx context.Context, charge open
 	}
 
 	bookingId := strings.TrimPrefix(charge.CorrelationID, "booking-")
-	booking, err := uc.bookingRepo.GetBookingSummary(ctx, bookingId)
+	booking, err := uc.summaryReader.GetBookingSummary(ctx, bookingId)
 	if err != nil {
 		return err
 	}
 
-    loc, _ := time.LoadLocation("America/Sao_Paulo")
+	token, err := entity.GenerateCancelToken()
+	if err != nil {
+		return err
+	}
+	tokenHash := entity.HashCancelToken(token)
+	if err := uc.tokenWriter.SetCancelTokenHash(ctx, bookingId, tokenHash); err != nil {
+		return err
+	}
+
+	loc, _ := time.LoadLocation("America/Sao_Paulo")
 	bookingEmailInfo := entity.BookingConfirmationInfo{
 		GuestName:        booking.GuestName,
 		GuestPhone:       booking.GuestPhone,
@@ -111,7 +123,7 @@ func (uc *pixGatewayUsecaseImpl) ConfirmPayment(ctx context.Context, charge open
 		BookingInterval:  fmt.Sprintf("%s - %s", booking.StartTime.Format("15:04"), booking.EndTime.Format("15:04")),
 		TotalPrice:       booking.TotalPrice,
 		VerificationCode: booking.VerificationCode,
-        CancelTokenHash: booking.CancelTokenHash,
+		CancelToken:      token,
 	}
 
 	err = uc.notificationService.Send(ctx, bookingEmailInfo)
@@ -145,24 +157,23 @@ func (uc *pixGatewayUsecaseImpl) GetCompanyBalance(ctx context.Context, id strin
 	return total, nil
 }
 
-
 func (uc *pixGatewayUsecaseImpl) CreateWithdrawRequest(ctx context.Context, companyId string) error {
-    pixKey, err := uc.repo.GetSubaccountPixKeyByCompanyID(ctx, companyId)
-    if err != nil {
-        return err
-    }
+	pixKey, err := uc.repo.GetSubaccountPixKeyByCompanyID(ctx, companyId)
+	if err != nil {
+		return err
+	}
 
-    withdraw, err := uc.pixClient.WithdrawSubaccount(ctx, pixKey)
-    if err != nil {
-        return err
-    }
+	withdraw, err := uc.pixClient.WithdrawSubaccount(ctx, pixKey)
+	if err != nil {
+		return err
+	}
 
-    err = uc.repo.CreateWithdrawRequest(ctx, companyId, withdraw)
-    if err != nil {
-        return fmt.Errorf("failed to create withdraw request: %w", err)
-    }
+	err = uc.repo.CreateWithdrawRequest(ctx, companyId, withdraw)
+	if err != nil {
+		return fmt.Errorf("failed to create withdraw request: %w", err)
+	}
 
-    return nil
+	return nil
 }
 
 func (uc *pixGatewayUsecaseImpl) ExpirePayment(ctx context.Context, charge openpix.Charge) error {
@@ -175,10 +186,10 @@ func (uc *pixGatewayUsecaseImpl) ExpirePayment(ctx context.Context, charge openp
 }
 
 func (uc *pixGatewayUsecaseImpl) GetBookingChargeInformation(ctx context.Context, id string) (entity.Payment, error) {
-    payment, err := uc.repo.GetBookingChargeInformation(ctx, id)
-    if err != nil {
-        return entity.Payment{}, err
-    }
+	payment, err := uc.repo.GetBookingChargeInformation(ctx, id)
+	if err != nil {
+		return entity.Payment{}, err
+	}
 
-    return payment, nil
+	return payment, nil
 }
