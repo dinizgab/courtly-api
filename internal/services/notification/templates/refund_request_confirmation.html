@@ -1,296 +1,225 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solicitação de Reembolso Confirmada - Courtly</title>
-    <style>
-        /* Reset styles for email clients */
-        body, html {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            background-color: #f5f5f5;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solicitação de Reembolso Confirmada - Courtly</title>
+  <style>
+    /* Reset styles for email clients */
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333333;
+      background-color: #f5f5f5;
+    }
 
-        /* Container styles */
-        .email-container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-        }
+    /* Container styles */
+    .email-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+    }
 
-        /* Header styles */
-        .header {
-            background-color: #dc2626; /* red-600 */
-            padding: 20px;
-            text-align: center;
-        }
+    /* Header styles */
+    .header {
+      background-color: #52b788; /* green-500 */
+      padding: 20px;
+      text-align: center;
+    }
 
-        .logo {
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-        }
+    .logo {
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+    }
 
-        /* Content styles */
-        .content {
-            padding: 30px;
-        }
+    /* Content styles */
+    .content {
+      padding: 30px;
+    }
 
-        .greeting {
-            font-size: 20px;
-            margin-bottom: 20px;
-        }
+    .greeting {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
 
-        .message {
-            margin-bottom: 25px;
-        }
+    .message {
+      margin-bottom: 25px;
+    }
 
-        /* Protocol number styles */
-        .protocol-container {
-            background-color: #fef2f2; /* red-50 */
-            border: 1px solid #fecaca; /* red-200 */
-            border-radius: 8px;
-            padding: 20px;
-            margin: 25px 0;
-            text-align: center;
-        }
+    /* Protocol styles (equivalent to verification code) */
+    .protocol-container {
+      background-color: #c4e9d6; /* green-50 */
+      border: 1px solid #dcfce7; /* green-100 */
+      border-radius: 8px;
+      padding: 20px;
+      margin: 25px 0;
+      text-align: center;
+    }
 
-        .protocol-title {
-            font-size: 16px;
-            color: #dc2626; /* red-600 */
-            margin-bottom: 10px;
-        }
+    .protocol-title {
+      font-size: 16px;
+      color: #52b788;
+      margin-bottom: 10px;
+    }
 
-        .protocol-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #dc2626; /* red-600 */
-            padding: 10px;
-            background-color: white;
-            border-radius: 4px;
-            display: inline-block;
-            margin: 10px 0;
-        }
+    .protocol-number {
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: #52b788;
+      padding: 10px;
+      background-color: white;
+      border-radius: 4px;
+      display: inline-block;
+      margin: 10px 0;
+    }
 
-        /* Refund details styles */
-        .refund-details {
-            background-color: #f9fafb; /* gray-50 */
-            border-radius: 8px;
-            padding: 20px;
-            margin: 25px 0;
-        }
+    /* Refund details styles (mirrors booking-details) */
+    .refund-details {
+      background-color: #f9fafb; /* gray-50 */
+      border-radius: 8px;
+      padding: 20px;
+      margin: 25px 0;
+    }
 
-        .refund-details-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #111827; /* gray-900 */
-        }
+    .refund-details-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #111827; /* gray-900 */
+    }
 
-        .refund-detail-row {
-            display: flex;
-            margin-bottom: 10px;
-        }
+    .refund-detail-row {
+      display: flex;
+      margin-bottom: 10px;
+    }
 
-        .refund-detail-label {
-            width: 40%;
-            font-weight: 600;
-            color: #4b5563; /* gray-600 */
-        }
+    .refund-detail-label {
+      width: 40%;
+      font-weight: 600;
+      color: #4b5563; /* gray-600 */
+    }
 
-        .refund-detail-value {
-            width: 60%;
-            color: #111827; /* gray-900 */
-        }
+    .refund-detail-value {
+      width: 60%;
+      color: #111827; /* gray-900 */
+    }
 
-        /* Timeline styles */
-        .timeline {
-            background-color: #eff6ff; /* blue-50 */
-            border-radius: 8px;
-            padding: 20px;
-            margin: 25px 0;
-        }
+    /* Footer styles */
+    .footer {
+      background-color: #f9fafb; /* gray-50 */
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #6b7280; /* gray-500 */
+      border-top: 1px solid #e5e7eb; /* gray-200 */
+    }
 
-        .timeline-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #1e40af; /* blue-700 */
-            margin-bottom: 15px;
-        }
+    .social-links {
+      margin: 15px 0;
+    }
 
-        .timeline-step {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
+    .social-link {
+      display: inline-block;
+      margin: 0 10px;
+      color: #52b788;
+      text-decoration: none;
+    }
 
-        .timeline-step:last-child {
-            margin-bottom: 0;
-        }
+    .footer-text {
+      margin: 10px 0;
+    }
 
-        .timeline-number {
-            background-color: #3b82f6; /* blue-500 */
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
+    a {
+      color: #52b788;
+    }
 
-        .timeline-text {
-            color: #1e40af; /* blue-700 */
-            font-size: 14px;
-        }
+    /* Responsive styles */
+    @media screen and (max-width: 600px) {
+      .refund-detail-row {
+        flex-direction: column;
+      }
 
-        /* Footer styles */
-        .footer {
-            background-color: #f9fafb; /* gray-50 */
-            padding: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #6b7280; /* gray-500 */
-            border-top: 1px solid #e5e7eb; /* gray-200 */
-        }
+      .refund-detail-label,
+      .refund-detail-value {
+        width: 100%;
+      }
 
-        .social-links {
-            margin: 15px 0;
-        }
+      .refund-detail-label {
+        margin-bottom: 5px;
+      }
 
-        .social-link {
-            display: inline-block;
-            margin: 0 10px;
-            color: #dc2626; /* red-600 */
-            text-decoration: none;
-        }
-
-        .footer-text {
-            margin: 10px 0;
-        }
-
-        /* Responsive styles */
-        @media screen and (max-width: 600px) {
-            .refund-detail-row {
-                flex-direction: column;
-            }
-
-            .refund-detail-label,
-            .refund-detail-value {
-                width: 100%;
-            }
-
-            .refund-detail-label {
-                margin-bottom: 5px;
-            }
-
-            .protocol-number {
-                font-size: 20px;
-            }
-        }
-    </style>
+      .protocol-number {
+        font-size: 28px;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="email-container">
-    <!-- Header with logo -->
+  <div class="email-container">
+    <!-- Header -->
     <div class="header">
-        <div class="logo">Courtly</div>
+      <div class="logo">Courtly</div>
     </div>
 
-    <!-- Main content -->
     <div class="content">
-        <!-- Greeting -->
-        <div class="greeting">Olá, {{nome_cliente}}!</div>
+      <div class="greeting">Olá, {{.GuestName}}!</div>
 
-        <!-- Confirmation message -->
-        <div class="message">
-            Recebemos sua solicitação de reembolso e ela foi confirmada com sucesso. Abaixo estão os detalhes da sua solicitação e o protocolo para acompanhamento.
+      <div class="message">
+        Recebemos sua solicitação de reembolso e ela foi confirmada com sucesso. Abaixo estão os detalhes da sua solicitação e o protocolo para acompanhamento.
+      </div>
+
+      <div class="protocol-container">
+        <div class="protocol-title">Protocolo da Solicitação</div>
+        <div class="protocol-number">{{.ID}}</div>
+      </div>
+
+      <!-- Refund details -->
+      <div class="refund-details">
+        <div class="refund-details-title">Detalhes da Solicitação</div>
+
+        <div class="refund-detail-row">
+          <div class="refund-detail-label">Reserva:</div>
+          <div class="refund-detail-value">{{.CourtName}}</div>
         </div>
 
-        <!-- Protocol section -->
-        <div class="protocol-container">
-            <div class="protocol-title">Protocolo da Solicitação</div>
-            <div class="protocol-number">{{protocolo_reembolso}}</div>
+        <div class="refund-detail-row">
+          <div class="refund-detail-label">Data:</div>
+          <div class="refund-detail-value">{{.BookingDate}} às {{.BookingInterval}}</div>
         </div>
 
-        <!-- Refund details -->
-        <div class="refund-details">
-            <div class="refund-details-title">Detalhes da Solicitação</div>
-
-            <div class="refund-detail-row">
-                <div class="refund-detail-label">Reserva:</div>
-                <div class="refund-detail-value">{{codigo_reserva}} - {{nome_quadra}}</div>
-            </div>
-
-            <div class="refund-detail-row">
-                <div class="refund-detail-label">Data da Reserva:</div>
-                <div class="refund-detail-value">{{data_reserva}} às {{horario_reserva}}</div>
-            </div>
-
-            <div class="refund-detail-row">
-                <div class="refund-detail-label">Valor a Reembolsar:</div>
-                <div class="refund-detail-value">R$ {{valor_reembolso}}</div>
-            </div>
-
-            <div class="refund-detail-row">
-                <div class="refund-detail-label">Motivo:</div>
-                <div class="refund-detail-value">{{motivo_reembolso}}</div>
-            </div>
-
-            <div class="refund-detail-row">
-                <div class="refund-detail-label">Data da Solicitação:</div>
-                <div class="refund-detail-value">{{data_solicitacao}}</div>
-            </div>
+        <div class="refund-detail-row">
+          <div class="refund-detail-label">Valor Reembolsado:</div>
+          <div class="refund-detail-value">R$ {{.TotalPrice}}</div>
         </div>
 
-        <!-- Important information -->
-        <div class="message">
-            <strong>Informações importantes:</strong>
-            <ul>
-                <li>Mantenha o protocolo {{protocolo_reembolso}} para consultas futuras</li>
-                <li>Em caso de dúvidas, entre em contato conosco informando o protocolo</li>
-            </ul>
-        </div>
 
-        <!-- Closing -->
-        <div class="message">
-            Agradecemos pela sua compreensão e estamos trabalhando para processar sua solicitação o mais rápido possível.
-        </div>
+      <div class="message">
+        Agradecemos pela sua compreensão e estamos trabalhando para sua melhor experiência.
+      </div>
     </div>
 
+    <!-- Footer -->
     <div class="footer">
-        <div class="social-links">
-            <a href="#" class="social-link">Facebook</a>
-            <a href="#" class="social-link">Instagram</a>
-            <a href="#" class="social-link">Twitter</a>
-        </div>
+      <div class="social-links">
+        <a href="#" class="social-link">Facebook</a>
+        <a href="#" class="social-link">Instagram</a>
+        <a href="#" class="social-link">Twitter</a>
+      </div>
 
-        <div class="footer-text">
-            © 2025 Courtly. Todos os direitos reservados.
-        </div>
+      <div class="footer-text">© 2025 Courtly. Todos os direitos reservados.</div>
+      <div class="footer-text">Rua das Quadras, 123 - Centro, São Paulo - SP, 01234-567</div>
 
-        <div class="footer-text">
-            Rua das Quadras, 123 - Centro, São Paulo - SP, 01234-567
-        </div>
-
-        <div class="footer-text">
-            <a href="mailto:suporte@courtly.com.br" style="color: #16a34a; text-decoration: none;">
-                suporte@courtly.com.br
-            </a>
-            |
-            <a href="tel:+551199999999" style="color: #16a34a; text-decoration: none;">
-                (11) 9999-9999
-            </a>
-        </div>
+      <div class="footer-text">
+        <a href="mailto:suporte@courtly.com.br" style="color: #16a34a; text-decoration: none;">suporte@courtly.com.br</a>
+        |
+        <a href="tel:+551199999999" style="color: #16a34a; text-decoration: none;">(11) 9999-9999</a>
+      </div>
     </div>
-</div>
+  </div>
 </body>
 </html>
+

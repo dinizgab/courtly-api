@@ -7,15 +7,13 @@ import (
 	"html/template"
 	"io/fs"
 	"net/url"
-
-	"github.com/dinizgab/booking-mvp/internal/entity"
 )
 
-//go:embed templates/booking_confirmation.html
+//go:embed templates/*.html
 var templateFs embed.FS
 
 type Renderer interface {
-	Render(booking entity.BookingConfirmationInfo) (string, error)
+	Render(naame string, booking any) (string, error)
 }
 
 type htmlRendererImpl struct {
@@ -31,21 +29,21 @@ func NewHTMLRender(fsys fs.FS) (Renderer, error) {
 		"urlquery": url.QueryEscape,
 	}
 
-	tpl, err := template.New("booking_confirmation.html").
+    tpls, err := template.New("").
 		Funcs(funcMap).
-		ParseFS(fsys, "templates/booking_confirmation.html")
+		ParseFS(fsys, "templates/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("Renderer.Render - failed to read template file: %w", err)
 	}
 
 	return &htmlRendererImpl{
-		tpl: tpl,
+		tpl: tpls,
 	}, nil
 }
 
-func (r *htmlRendererImpl) Render(booking entity.BookingConfirmationInfo) (string, error) {
+func (r *htmlRendererImpl) Render(name string, booking any) (string, error) {
 	var buf bytes.Buffer
-	if err := r.tpl.Execute(&buf, booking); err != nil {
+	if err := r.tpl.ExecuteTemplate(&buf, name, booking); err != nil {
 		return "", fmt.Errorf("Renderer.Render - failed to execute template: %w", err)
 	}
 

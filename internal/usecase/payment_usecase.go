@@ -13,6 +13,14 @@ import (
 	"github.com/dinizgab/booking-mvp/internal/services/notification"
 )
 
+const (
+    bookingConfirmationEmailSubject = "Confirmação de reserva"
+    refundEmailSubject = "Confirmação de solicitação de reembolso"
+
+    bookingConfirmationTemplateName = "booking_confirmation.html"
+    refundTemplateName = "refund_request_confirmation.html"
+)
+
 type PaymentUsecase interface {
 	CreateSubaccount(ctx context.Context, company entity.Company) error
 	CreateCharge(ctx context.Context, companyId string, booking entity.Booking) error
@@ -123,12 +131,12 @@ func (uc *pixGatewayUsecaseImpl) ConfirmPayment(ctx context.Context, charge open
 		CourtAddress:     booking.Court.Company.Address,
 		BookingDate:      booking.StartTime.In(loc).Format("02-01-2006"),
 		BookingInterval:  fmt.Sprintf("%s - %s", booking.StartTime.In(loc).Format("15:04"), booking.EndTime.In(loc).Format("15:04")),
-		TotalPrice:       fmt.Sprintf("%.2f", float64(booking.TotalPrice) / 100),
+		TotalPrice:       fmt.Sprintf("%.2f", float64(booking.TotalPrice)/100),
 		VerificationCode: booking.VerificationCode,
 		CancelToken:      token,
 	}
 
-	err = uc.notificationService.Send(ctx, bookingEmailInfo)
+	err = uc.notificationService.Send(ctx, bookingConfirmationTemplateName, bookingConfirmationEmailSubject, bookingEmailInfo, booking.GuestEmail)
 	if err != nil {
 		return err
 	}
@@ -208,6 +216,30 @@ func (uc *pixGatewayUsecaseImpl) RefundCharge(ctx context.Context, bookingId str
 	}
 
 	err = uc.repo.SaveRefundRequest(ctx, bookingId, refund)
+	if err != nil {
+		return err
+	}
+
+    booking, err := uc.summaryReader.GetBookingSummary(ctx, bookingId)
+    if err != nil {
+        return err
+    }
+
+	loc, _ := time.LoadLocation("America/Sao_Paulo")
+	bookingEmailInfo := entity.BookingConfirmationInfo{
+		ID:               bookingId,
+		GuestName:        booking.GuestName,
+		GuestPhone:       booking.GuestPhone,
+		GuestEmail:       booking.GuestEmail,
+		CourtName:        booking.Court.Name,
+		CourtAddress:     booking.Court.Company.Address,
+		BookingDate:      booking.StartTime.In(loc).Format("02-01-2006"),
+		BookingInterval:  fmt.Sprintf("%s - %s", booking.StartTime.In(loc).Format("15:04"), booking.EndTime.In(loc).Format("15:04")),
+		TotalPrice:       fmt.Sprintf("%.2f", float64(booking.TotalPrice)/100),
+		VerificationCode: booking.VerificationCode,
+	}
+
+	err = uc.notificationService.Send(ctx, refundTemplateName, refundEmailSubject, bookingEmailInfo, booking.GuestEmail)
 	if err != nil {
 		return err
 	}

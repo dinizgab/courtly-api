@@ -4,14 +4,11 @@ import (
 	"context"
 
 	"github.com/dinizgab/booking-mvp/internal/config"
-	"github.com/dinizgab/booking-mvp/internal/entity"
 	"gopkg.in/gomail.v2"
 )
 
-const emailSubject = "Confirmação de reserva"
-
 type Sender interface {
-	Send(ctx context.Context, subject entity.BookingConfirmationInfo) error
+	Send(ctx context.Context, tplName string, subject string, data any, to ...string) error
 }
 
 type emailSender struct {
@@ -26,16 +23,22 @@ func NewEmailSender(renderer Renderer, config *config.SMTPConfig) Sender {
 	}
 }
 
-func (s *emailSender) Send(ctx context.Context, info entity.BookingConfirmationInfo) error {
-	body, err := s.Renderer.Render(info)
+func (s *emailSender) Send(
+	ctx context.Context,
+	tplName string,
+	subject string,
+	data any,
+    to ...string,
+) error {
+	body, err := s.Renderer.Render(tplName, data)
 	if err != nil {
 		return err
 	}
 
 	m := gomail.NewMessage()
 	m.SetHeader("From", s.Config.Email)
-	m.SetHeader("To", info.GuestEmail)
-	m.SetHeader("Subject", emailSubject)
+	m.SetHeader("To", to...)
+	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body)
 
 	d := gomail.NewDialer(s.Config.Host, s.Config.Port, s.Config.User, s.Config.Pass)
