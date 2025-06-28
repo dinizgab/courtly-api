@@ -21,10 +21,10 @@ type (
 		FindByIDShowcase(ctx context.Context, id string) (entity.Booking, error)
 		ListByCompanyID(ctx context.Context, companyId string, filter entity.BookingFilter) ([]entity.Booking, error)
 		ConfirmBooking(ctx context.Context, companyId string, bookingId string) error
-        CancelBooking(ctx context.Context, id string) error
+		CancelBooking(ctx context.Context, id string) error
 		Update(ctx context.Context, booking entity.Booking) error
 		Delete(ctx context.Context, id string) error
-        GetCancelTokenInfo(ctx context.Context, bookingId string) (entity.Booking, error)
+		GetCancelTokenInfo(ctx context.Context, bookingId string) (entity.Booking, error)
 	}
 
 	bookingRepositoryImpl struct {
@@ -53,8 +53,8 @@ var (
 	getBookingConfirmationInfoQuery string
 	//go:embed sql/booking/set_cancel_token_hash.sql
 	setCancelTokenHashQuery string
-    //go:embed sql/booking/get_cancel_token_info.sql
-    getCancelTokenInfoQuery string
+	//go:embed sql/booking/get_cancel_token_info.sql
+	getCancelTokenInfoQuery string
 )
 
 func NewBookingRepository(db database.Database) BookingRepository {
@@ -198,12 +198,12 @@ func (r *bookingRepositoryImpl) ConfirmBooking(ctx context.Context, companyId st
 }
 
 func (r *bookingRepositoryImpl) CancelBooking(ctx context.Context, id string) error {
-    _, err := r.db.Exec(ctx, cancelBookingQuery, id)
-    if err != nil {
-        return fmt.Errorf("BookingRepository.CancelBooking: %w", err)
-    }
+	_, err := r.db.Exec(ctx, cancelBookingQuery, id)
+	if err != nil {
+		return fmt.Errorf("BookingRepository.CancelBooking: %w", err)
+	}
 
-    return nil
+	return nil
 }
 
 func (r *bookingRepositoryImpl) Update(ctx context.Context, booking entity.Booking) error {
@@ -233,7 +233,7 @@ func (r *bookingRepositoryImpl) GetBookingSummary(ctx context.Context, bookingId
 		&company.Address,
 		&booking.StartTime,
 		&booking.EndTime,
-		&booking.TotalPrice,
+        &booking.TotalPrice,
 		&booking.VerificationCode,
 		&booking.CancelTokenHash,
 	)

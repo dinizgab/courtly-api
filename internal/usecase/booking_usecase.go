@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/dinizgab/booking-mvp/internal/entity"
@@ -51,7 +52,9 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 	if err != nil {
 		return "", err
 	}
-	booking.TotalPrice = court.HourlyPrice * booking.DurationInHours()
+
+    total := float64(court.HourlyPrice) * booking.DurationInHours()
+    booking.TotalPrice = int64(math.Round(total))
 
 	id, err := u.bookingRepository.Create(ctx, booking)
 	if err != nil {

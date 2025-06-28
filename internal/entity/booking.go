@@ -30,17 +30,17 @@ type BookingFilter struct {
 }
 
 type BookingConfirmationInfo struct {
-	ID               string  `json:"id"`
-	GuestName        string  `json:"guest_name"`
-	GuestPhone       string  `json:"guest_phone"`
-	GuestEmail       string  `json:"guest_email"`
-	CourtName        string  `json:"court_name"`
-	CourtAddress     string  `json:"court_address"`
-	BookingDate      string  `json:"booking_date"`
-	BookingInterval  string  `json:"booking_interval"`
-	TotalPrice       float64 `json:"total_price"`
-	VerificationCode string  `json:"verification_code"`
-	CancelToken      string  `json:"cancel_token"`
+	ID               string `json:"id"`
+	GuestName        string `json:"guest_name"`
+	GuestPhone       string `json:"guest_phone"`
+	GuestEmail       string `json:"guest_email"`
+	CourtName        string `json:"court_name"`
+	CourtAddress     string `json:"court_address"`
+	BookingDate      string `json:"booking_date"`
+	BookingInterval  string `json:"booking_interval"`
+	TotalPrice       string `json:"total_price"`
+	VerificationCode string `json:"verification_code"`
+	CancelToken      string `json:"cancel_token"`
 }
 
 type Booking struct {
@@ -54,7 +54,7 @@ type Booking struct {
 	GuestPhone               string        `json:"guest_phone"`
 	GuestEmail               string        `json:"guest_email"`
 	VerificationCode         string        `json:"verification_code"`
-	TotalPrice               float64       `json:"total_price"`
+	TotalPrice               int64         `json:"total_price"`
 	CancelTokenHash          string        `json:"cancel_token_hash"`
 	CancelTokenHashExpiresAt time.Time     `json:"cancel_token_hash_expires_at"`
 	Court                    *Court        `json:"court,omitempty"`

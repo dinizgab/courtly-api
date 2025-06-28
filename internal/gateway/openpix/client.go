@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
 
 	"github.com/dinizgab/booking-mvp/internal/config"
@@ -72,19 +71,18 @@ func (c *openPixClientImpl) CreateSubaccount(ctx context.Context, subaccount Sub
 // {"error":"O valor total do split de pagamento não pode ser igual ou maior que o valor da cobrança menos a taxa esperada"}
 func (c *openPixClientImpl) CreateCharge(ctx context.Context, subaccountKey string, booking entity.Booking) (Charge, error) {
 	correlationId := fmt.Sprintf("booking-%s", booking.ID)
-	totalPrice := int64(math.Round(booking.TotalPrice * 100))
     // gasPrice := 5% + 0.85
-	gasPrice := ((totalPrice * 5 + 50) / 100) + 85
+	gasPrice := ((booking.TotalPrice * 5 + 50) / 100) + 85
 	in := CreateChargeRequest{
 		CorrelationID: correlationId,
-		Value:         totalPrice + gasPrice,
+		Value:         booking.TotalPrice + gasPrice,
 		Customer: Customer{
 			Name:  booking.GuestName,
 			Email: booking.GuestEmail,
 			Phone: booking.GuestPhone,
 		},
 		Splits: []Split{{
-			Value:     totalPrice - gasPrice,
+			Value:     booking.TotalPrice - gasPrice,
 			PixKey:    subaccountKey,
 			SplitType: "SPLIT_SUB_ACCOUNT",
 		}},

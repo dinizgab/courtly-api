@@ -55,8 +55,8 @@ var (
 	listCourtScheduleQuery string
 	//go:embed sql/court/update_court.sql
 	updateCourtQuery string
-    //go:embed sql/court/update_court_schedule.sql
-    updateCourtScheduleQuery string
+	//go:embed sql/court/update_court_schedule.sql
+	updateCourtScheduleQuery string
 	//go:embed sql/court/delete_court.sql
 	deleteCourtQuery string
 )
@@ -303,7 +303,7 @@ func (r *courtRepositoryImpl) ListCompanyCourtsShowcase(ctx context.Context, com
 			name                     string
 			description              string
 			sportType                string
-			hourlyPrice              float64
+			hourlyPrice              int64
 			isActive                 bool
 			capacity                 int
 			openingTime, closingTime sql.NullString
@@ -437,7 +437,7 @@ func (r *courtRepositoryImpl) Update(ctx context.Context, id string, c entity.Co
 
 		for i, s := range c.CourtSchedule {
 			startIdx := i*4 + 1
-            valueStrings = append(valueStrings, fmt.Sprintf("($%d::uuid, $%d::boolean, $%d::time, $%d::time)", startIdx, startIdx+1, startIdx+2, startIdx+3))
+			valueStrings = append(valueStrings, fmt.Sprintf("($%d::uuid, $%d::boolean, $%d::time, $%d::time)", startIdx, startIdx+1, startIdx+2, startIdx+3))
 			args = append(args, s.ID, s.IsOpen, s.OpeningTime, s.ClosingTime)
 		}
 
@@ -452,8 +452,8 @@ func (r *courtRepositoryImpl) Update(ctx context.Context, id string, c entity.Co
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("CourtRepository.Update (commit): %w", err)
 	}
-    // TODO - Switch this, this is bad practice
-    tx = nil
+	// TODO - Switch this, this is bad practice
+	tx = nil
 
 	return nil
 }

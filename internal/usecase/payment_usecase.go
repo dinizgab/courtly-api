@@ -122,8 +122,8 @@ func (uc *pixGatewayUsecaseImpl) ConfirmPayment(ctx context.Context, charge open
 		CourtName:        booking.Court.Name,
 		CourtAddress:     booking.Court.Company.Address,
 		BookingDate:      booking.StartTime.In(loc).Format("02-01-2006"),
-		BookingInterval:  fmt.Sprintf("%s - %s", booking.StartTime.Format("15:04"), booking.EndTime.Format("15:04")),
-		TotalPrice:       booking.TotalPrice,
+		BookingInterval:  fmt.Sprintf("%s - %s", booking.StartTime.In(loc).Format("15:04"), booking.EndTime.In(loc).Format("15:04")),
+		TotalPrice:       fmt.Sprintf("%.2f", float64(booking.TotalPrice) / 100),
 		VerificationCode: booking.VerificationCode,
 		CancelToken:      token,
 	}
