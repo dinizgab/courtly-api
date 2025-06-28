@@ -192,7 +192,7 @@ func (c *openPixClientImpl) RefundCharge(ctx context.Context, payment entity.Pay
 		CorrelationID: refundCorrelationID,
         Value:         payment.ValueTotal,
 	}
-    fmt.Println(in)
+
 	body, err := json.Marshal(in)
 	if err != nil {
 		return Refund{}, fmt.Errorf("OpenPixClient.CreateSubaccount - failed to marshal request: %w", err)
@@ -225,8 +225,6 @@ func (c *openPixClientImpl) RefundCharge(ctx context.Context, payment entity.Pay
 	if err != nil {
 		return Refund{}, fmt.Errorf("OpenPixClient.RefundCharge - failed to decode response: %w", err)
 	}
-
-    fmt.Println("RefundCharge response:", out.Refund)
 
 	return out.Refund, nil
 }

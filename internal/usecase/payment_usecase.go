@@ -115,6 +115,7 @@ func (uc *pixGatewayUsecaseImpl) ConfirmPayment(ctx context.Context, charge open
 
 	loc, _ := time.LoadLocation("America/Sao_Paulo")
 	bookingEmailInfo := entity.BookingConfirmationInfo{
+		ID:               bookingId,
 		GuestName:        booking.GuestName,
 		GuestPhone:       booking.GuestPhone,
 		GuestEmail:       booking.GuestEmail,
@@ -206,10 +207,10 @@ func (uc *pixGatewayUsecaseImpl) RefundCharge(ctx context.Context, bookingId str
 		return err
 	}
 
-    err = uc.repo.SaveRefundRequest(ctx, bookingId, refund)
-    if err != nil {
-        return err
-    }
+	err = uc.repo.SaveRefundRequest(ctx, bookingId, refund)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -25,7 +25,6 @@ func ConfirmedPaymentWebhook(puc usecase.PaymentUsecase, buc usecase.BookingUsec
             c.JSON(500, gin.H{"status": "error", "message": "Failed to confirm payment"})
             return
         }
-    
         c.JSON(200, gin.H{"status": "success", "message": "Payment confirmed"})
     }
 }
