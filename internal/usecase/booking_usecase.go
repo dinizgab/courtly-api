@@ -53,8 +53,8 @@ func (u *bookingUsecaseImpl) Create(ctx context.Context, booking entity.Booking)
 		return "", err
 	}
 
-    total := float64(court.HourlyPrice) * booking.DurationInHours()
-    booking.TotalPrice = int64(math.Round(total))
+	total := float64(court.HourlyPrice) * booking.DurationInHours()
+	booking.TotalPrice = int64(math.Round(total))
 
 	id, err := u.bookingRepository.Create(ctx, booking)
 	if err != nil {
@@ -127,22 +127,29 @@ func (u *bookingUsecaseImpl) CancelBooking(ctx context.Context, bookingId string
 	}
 
 	if entity.HashCancelToken(cancelToken) != booking.CancelTokenHash {
-        return fmt.Errorf("BookingUsecase.CancelBooking - Invalid cancel token")
+		return fmt.Errorf("BookingUsecase.CancelBooking - Invalid cancel token")
 	}
 
-	if time.Now().After(booking.CancelTokenHashExpiresAt) {
-        return fmt.Errorf("BookingUsecase.CancelBooking - The time to cancel the booking has expired")
+	orig := time.Now()
+	now := time.Date(
+		orig.Year(), orig.Month(), orig.Day(),
+		orig.Hour(), orig.Minute(), orig.Second(), orig.Nanosecond(),
+		time.UTC,
+	)
+	expires := booking.CancelTokenHashExpiresAt.UTC()
+	if now.After(expires) {
+		return fmt.Errorf("BookingUsecase.CancelBooking - The time to cancel the booking has expired")
 	}
 
 	err = u.paymentUsecase.RefundCharge(ctx, bookingId)
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
-    err = u.bookingRepository.CancelBooking(ctx, bookingId)
-    if err != nil {
-        return err
-    }
+	err = u.bookingRepository.CancelBooking(ctx, bookingId)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
