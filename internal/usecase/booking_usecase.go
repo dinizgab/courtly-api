@@ -123,12 +123,12 @@ func (u *bookingUsecaseImpl) CancelBooking(ctx context.Context, bookingId string
 		return err
 	}
 
-	if time.Now().After(booking.CancelTokenHashExpiresAt) {
-        return fmt.Errorf("BookingUsecase.CancelBooking - token expired")
+	if entity.HashCancelToken(cancelToken) != booking.CancelTokenHash {
+        return fmt.Errorf("BookingUsecase.CancelBooking - Invalid cancel token")
 	}
 
-	if entity.HashCancelToken(cancelToken) != booking.CancelTokenHash {
-        return fmt.Errorf("BookingUsecase.CancelBooking - invalid cancel token")
+	if time.Now().After(booking.CancelTokenHashExpiresAt) {
+        return fmt.Errorf("BookingUsecase.CancelBooking - The time to cancel the booking has expired")
 	}
 
 	err = u.paymentUsecase.RefundCharge(ctx, bookingId)
