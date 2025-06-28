@@ -177,6 +177,7 @@ func (r *paymentRepositoryImpl) GetPaymentByBookingID(ctx context.Context, id st
         &payment.CorrelationID,
         &payment.BookingID,
         &payment.PaidAt,
+        &payment.ValueTotal,
     )
     if err != nil {
         if err == pgx.ErrNoRows {
@@ -193,10 +194,8 @@ func (r *paymentRepositoryImpl) SaveRefundRequest(ctx context.Context, bookingId
         ctx,
         saveRefundRequestQuery,
         bookingId,
-        refund.EndToEndID,
-        refund.Status,
-        // TODO = Check if this variable name 
         refund.RefundedAt,
+        refund.EndToEndID,
     )
     if err != nil {
         return fmt.Errorf("paymentRepositoryImpl.SaveRefundRequest - failed to save refund request: %w", err)

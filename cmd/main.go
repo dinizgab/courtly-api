@@ -123,7 +123,7 @@ func main() {
 
 	webhookRouter := router.Group("/webhooks")
 	{
-		webhookRouter.POST("/pix/confirmed", webhooks.ConfirmedPaymentWebhook(pixPaymentUsecase))
+		webhookRouter.POST("/pix/confirmed", webhooks.ConfirmedPaymentWebhook(pixPaymentUsecase, bookingUsecase))
 		webhookRouter.POST("/pix/expired", webhooks.ExpiredPaymentWebhook(pixPaymentUsecase))
         webhookRouter.POST("/bookings/cancel", webhooks.CancelBookingWebhook(bookingUsecase))
 	}

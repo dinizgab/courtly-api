@@ -9,7 +9,7 @@ import (
 )
 
 // TODO - Check its not updating booking status to confirmed if the payment is confirmed
-func ConfirmedPaymentWebhook(uc usecase.PaymentUsecase) func(*gin.Context) {
+func ConfirmedPaymentWebhook(puc usecase.PaymentUsecase, buc usecase.BookingUsecase) func(*gin.Context) {
     return func(c *gin.Context) {
         var in openpix.ChargeWebhookEvent
         err := c.ShouldBindJSON(&in)
@@ -19,7 +19,7 @@ func ConfirmedPaymentWebhook(uc usecase.PaymentUsecase) func(*gin.Context) {
             return
         }
 
-        err = uc.ConfirmPayment(c.Request.Context(), in.Charge)
+        err = puc.ConfirmPayment(c.Request.Context(), in.Charge)
         if err != nil {
             log.Println("Error confirming payment:", err)
             c.JSON(500, gin.H{"status": "error", "message": "Failed to confirm payment"})
