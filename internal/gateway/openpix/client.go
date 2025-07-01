@@ -118,6 +118,7 @@ func (c *openPixClientImpl) CreateCharge(ctx context.Context, subaccountKey stri
 	if err != nil {
 		return Charge{}, fmt.Errorf("OpenPixClient.CreateCharge - failed to decode response: %w", err)
 	}
+    out.Charge.GasPrice = gasPrice
 
 	return out.Charge, nil
 }

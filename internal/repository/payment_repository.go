@@ -90,6 +90,7 @@ func (r *paymentRepositoryImpl) CreateCharge(ctx context.Context, companyId stri
         charge.QrCodeImage,
 		charge.Brcode,
 		charge.Value,
+        charge.GasPrice,
 		charge.ExpiresDate,
 	)
 	if err != nil {

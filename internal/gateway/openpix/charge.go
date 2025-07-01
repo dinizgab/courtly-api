@@ -29,6 +29,7 @@ type CreateChargeResponse struct {
 type Charge struct {
 	Status         string `json:"status"`
 	Value          int64  `json:"value"`
+    GasPrice      int64  `json:"gasPrice"`
 	CorrelationID  string `json:"correlationID"`
 	PaymentLinkID  string `json:"paymentLinkID"`
 	PaymentLinkURL string `json:"paymentLinkUrl"`

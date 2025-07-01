@@ -7,6 +7,7 @@ insert into payments (
     qr_code_image,
     brcode,
     value_total,
+    value_commission,
     expires_at
 ) values (
     $1,
@@ -17,6 +18,7 @@ insert into payments (
     $6,
     $7,
     $8,
-    $9
+    $9,
+    $10
 )
 
