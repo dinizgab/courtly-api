@@ -121,7 +121,7 @@ func (uc *pixGatewayUsecaseImpl) ConfirmPayment(ctx context.Context, charge open
 		return err
 	}
 
-	loc, _ := time.LoadLocation("America/Sao_Paulo")
+    loc := time.FixedZone("BRT", -3*3600)
 	bookingEmailInfo := entity.BookingConfirmationInfo{
 		ID:               bookingId,
 		GuestName:        booking.GuestName,
@@ -225,7 +225,7 @@ func (uc *pixGatewayUsecaseImpl) RefundCharge(ctx context.Context, bookingId str
         return err
     }
 
-	loc, _ := time.LoadLocation("America/Sao_Paulo")
+    loc := time.FixedZone("BRT", -3*3600)
 	bookingEmailInfo := entity.BookingConfirmationInfo{
 		ID:               bookingId,
 		GuestName:        booking.GuestName,
