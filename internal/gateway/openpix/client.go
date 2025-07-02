@@ -82,7 +82,7 @@ func (c *openPixClientImpl) CreateCharge(ctx context.Context, subaccountKey stri
 			Phone: booking.GuestPhone,
 		},
 		Splits: []Split{{
-			Value:     booking.TotalPrice - gasPrice,
+			Value:     booking.TotalPrice,
 			PixKey:    subaccountKey,
 			SplitType: "SPLIT_SUB_ACCOUNT",
 		}},
