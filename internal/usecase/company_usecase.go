@@ -52,12 +52,12 @@ func (u *companyUsecaseImpl) Create(ctx context.Context, company entity.Company)
 	company.Password = string(hash)
 	company.Slug = strings.ToLower(strings.ReplaceAll(company.Name, " ", "-"))
 
-	company, err = u.companyRepository.Create(ctx, company)
+	err = u.paymentUsecase.CreateSubaccount(ctx, company)
 	if err != nil {
 		return "", err
 	}
 
-	err = u.paymentUsecase.CreateSubaccount(ctx, company)
+	company, err = u.companyRepository.Create(ctx, company)
 	if err != nil {
 		return "", err
 	}
