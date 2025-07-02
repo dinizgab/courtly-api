@@ -89,13 +89,11 @@ func (c *openPixClientImpl) CreateCharge(ctx context.Context, subaccountKey stri
 		}},
 		ExpiresIn: 1800,
 	}
-    log.Println("in", in)
 
 	body, err := json.Marshal(in)
 	if err != nil {
 		return Charge{}, fmt.Errorf("OpenPixClient.CreateCharge - failed to marshal request: %w", err)
 	}
-    log.Println("body", body)
 
 	url := fmt.Sprintf("%s/api/v1/charge", c.baseURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
