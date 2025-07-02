@@ -60,7 +60,7 @@ func NewPixGatewayService(
 func (uc *pixGatewayUsecaseImpl) CreateSubaccount(ctx context.Context, company entity.Company) error {
 	subaccount := openpix.Subaccount{
 		Name:   company.Slug,
-		PixKey: company.Email,
+		PixKey: company.PixKey,
 	}
 
 	subaccount, err := uc.pixClient.CreateSubaccount(ctx, subaccount)
