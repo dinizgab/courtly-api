@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 
@@ -71,6 +72,8 @@ func (r *companyRepositoryImpl) Create(ctx context.Context, company entity.Compa
 
 func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (entity.Company, error) {
 	var company entity.Company
+	var pixKey sql.NullString
+	var pixKeyType sql.NullString
 	err := r.db.QueryRow(ctx, findCompanyByIDQuery, id).Scan(
 		&company.ID,
 		&company.Name,
@@ -79,8 +82,8 @@ func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (entity
 		&company.Email,
 		&company.CNPJ,
 		&company.Slug,
-        &company.PixKey,
-        &company.PixKeyType,
+		&pixKey,
+		&pixKeyType,
 	)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -88,6 +91,11 @@ func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (entity
 		}
 
 		return entity.Company{}, fmt.Errorf("CompanyRepository.FindByID: %w", err)
+	}
+
+	if pixKey.Valid && pixKeyType.Valid {
+		company.PixKey = pixKey.String
+		company.PixKeyType = pixKeyType.String
 	}
 
 	return company, nil

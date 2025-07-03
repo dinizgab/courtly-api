@@ -10,7 +10,7 @@ SELECT
     pix_key_type
 FROM
     companies c
-JOIN openpix_subaccounts os
+LEFT JOIN openpix_subaccounts os
     ON c.id = os.company_id
 WHERE
     c.id = $1
