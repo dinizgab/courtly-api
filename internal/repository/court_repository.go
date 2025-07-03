@@ -29,6 +29,7 @@ type (
 		ListAvailableBookingSlots(ctx context.Context, id string, date string) ([]entity.Booking, error)
 		Update(ctx context.Context, id string, c entity.Court) error
 		Delete(ctx context.Context, id string) error
+		UpdateCourtStatus(ctx context.Context, id string, court entity.Court) error
 	}
 
 	courtRepositoryImpl struct {
@@ -59,6 +60,8 @@ var (
 	updateCourtScheduleQuery string
 	//go:embed sql/court/delete_court.sql
 	deleteCourtQuery string
+	//go:embed sql/court/update_court_status.sql
+	updateCourtStatusQuery string
 )
 
 func NewCourtRepository(db database.Database) CourtRepository {
@@ -462,6 +465,15 @@ func (r *courtRepositoryImpl) Delete(ctx context.Context, id string) error {
 	_, err := r.db.Exec(ctx, deleteCourtQuery, id)
 	if err != nil {
 		return fmt.Errorf("CourtRepository.Delete: %w", err)
+	}
+
+	return nil
+}
+
+func (r *courtRepositoryImpl) UpdateCourtStatus(ctx context.Context, id string, court entity.Court) error {
+	_, err := r.db.Exec(ctx, updateCourtStatusQuery, id, court.IsActive)
+	if err != nil {
+		return fmt.Errorf("CourtRepository.UpdateCourtStatus: %w", err)
 	}
 
 	return nil

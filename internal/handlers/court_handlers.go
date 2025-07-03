@@ -38,13 +38,13 @@ func CreateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
 
 		var courtSchedule []entity.CourtSchedule
 		schedule := form.Value["schedule"][0]
-        if err := json.Unmarshal([]byte(schedule), &courtSchedule); err != nil {
-            log.Println(err)
-            c.JSON(400, gin.H{"error": "Invalid schedule input"})
-            return
-        }
+		if err := json.Unmarshal([]byte(schedule), &courtSchedule); err != nil {
+			log.Println(err)
+			c.JSON(400, gin.H{"error": "Invalid schedule input"})
+			return
+		}
 
-        court.CourtSchedule = courtSchedule
+		court.CourtSchedule = courtSchedule
 
 		err = uc.Create(c, court, photos)
 		if err != nil {
@@ -126,14 +126,14 @@ func UpdateCourt(uc usecase.CourtUseCase) func(*gin.Context) {
 		//	}
 		//}
 
-        var courtSchedule []entity.CourtSchedule
-        schedule := form.Value["schedule"][0]
-        if err := json.Unmarshal([]byte(schedule), &courtSchedule); err != nil {
-            log.Println(err)
-            c.JSON(400, gin.H{"error": "Invalid schedule input"})
-            return
-        }
-        court.CourtSchedule = courtSchedule
+		var courtSchedule []entity.CourtSchedule
+		schedule := form.Value["schedule"][0]
+		if err := json.Unmarshal([]byte(schedule), &courtSchedule); err != nil {
+			log.Println(err)
+			c.JSON(400, gin.H{"error": "Invalid schedule input"})
+			return
+		}
+		court.CourtSchedule = courtSchedule
 
 		err = uc.Update(c.Request.Context(), id, court)
 		if err != nil {
@@ -225,5 +225,31 @@ func CreateNewBooking(uc usecase.BookingUsecase) func(*gin.Context) {
 		}
 
 		c.JSON(201, gin.H{"message": "Booking created successfully", "id": id})
+	}
+}
+
+func ChangeCourtStatus(uc usecase.CourtUseCase) func(*gin.Context) {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		var court entity.Court
+		if id == "" {
+			c.JSON(400, gin.H{"error": "Invalid request"})
+			return
+		}
+
+		if err := c.ShouldBindJSON(&court); err != nil {
+			log.Println(err)
+			c.JSON(400, gin.H{"error": "Invalid request"})
+			return
+		}
+
+		err := uc.UpdateCourtStatus(c, id, court)
+		if err != nil {
+			log.Println(err)
+			c.JSON(500, gin.H{"error": "Failed to update court"})
+			return
+		}
+
+		c.JSON(200, gin.H{"message": "Court updated successfully"})
 	}
 }

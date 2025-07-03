@@ -61,12 +61,12 @@ func main() {
 	paymentRepository := repository.NewPaymentRepository(db)
 
 	pixPaymentUsecase := usecase.NewPixGatewayService(
-        pixGatewayClient,
-        bookingRepository,
-        bookingRepository,
-        paymentRepository,
-        emailService,
-    )
+		pixGatewayClient,
+		bookingRepository,
+		bookingRepository,
+		paymentRepository,
+		emailService,
+	)
 	courtUsecase := usecase.NewCourtUseCase(courtRepository, storageUploadService)
 	companyUsecase := usecase.NewCompanyUsecase(companyRepository, authService, pixPaymentUsecase)
 	bookingUsecase := usecase.NewBookingUsecase(bookingRepository, pixPaymentUsecase, companyUsecase, courtUsecase)
@@ -98,6 +98,7 @@ func main() {
 		protected.GET("/courts/:id", handlers.FindCourtByID(courtUsecase))
 		protected.GET("/courts/:id/bookings", handlers.ListCourtBookingsByID(courtUsecase))
 		protected.PUT("/courts/:id", handlers.UpdateCourt(courtUsecase))
+		protected.PATCH("/courts/:id/status", handlers.ChangeCourtStatus(courtUsecase))
 		protected.DELETE("/courts/:id", handlers.DeleteCourt(courtUsecase))
 
 		protected.GET("/companies/:id/courts", handlers.ListCourtsByCompany(courtUsecase))
@@ -111,7 +112,7 @@ func main() {
 
 	public := router.Group("/showcase")
 	{
-        public.GET("/companies/:id", handlers.FindCompanyByIDShowcase(companyUsecase))
+		public.GET("/companies/:id", handlers.FindCompanyByIDShowcase(companyUsecase))
 		public.GET("/companies/:id/courts", handlers.ListCompanyCourtShowcase(courtUsecase))
 		public.GET("/courts/:id", handlers.FindCourtByIDShowcase(courtUsecase))
 		public.GET("/courts/:id/available-slots", handlers.ListAvailableBookingSlots(courtUsecase))
@@ -127,7 +128,7 @@ func main() {
 		webhookRouter.POST("/pix/expired", webhooks.ExpiredPaymentWebhook(pixPaymentUsecase))
 	}
 
-    router.POST("/bookings/cancel", handlers.CancelBooking(bookingUsecase))
+	router.POST("/bookings/cancel", handlers.CancelBooking(bookingUsecase))
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.API.Port),

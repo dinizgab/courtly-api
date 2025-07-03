@@ -27,6 +27,7 @@ type (
 		ListAvailableBookingSlots(ctx context.Context, id string, date string) ([]entity.Booking, error)
 		Update(ctx context.Context, id string, court entity.Court) error
 		Delete(ctx context.Context, id string) error
+		UpdateCourtStatus(ctx context.Context, id string, court entity.Court) error
 	}
 )
 
@@ -140,6 +141,15 @@ func (u *courtUseCaseImpl) Update(ctx context.Context, id string, court entity.C
 
 func (u *courtUseCaseImpl) Delete(ctx context.Context, id string) error {
 	err := u.courtRepository.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *courtUseCaseImpl) UpdateCourtStatus(ctx context.Context, id string, court entity.Court) error {
+	err := u.courtRepository.UpdateCourtStatus(ctx, id, court)
 	if err != nil {
 		return err
 	}
