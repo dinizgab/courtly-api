@@ -6,7 +6,8 @@ SELECT
     email,
     cnpj,
     slug,
-    pix_key
+    pix_key,
+    pix_key_type
 FROM
     companies c
 JOIN openpix_subaccounts os

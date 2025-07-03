@@ -17,6 +17,7 @@ type Company struct {
 	Slug     string `json:"slug"`
 
     PixKey string `json:"pix_key"`
+    PixKeyType string `json:"pix_key_type"`
 
 	Courts []Court `json:"courts"`
 }

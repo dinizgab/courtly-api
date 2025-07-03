@@ -28,5 +28,6 @@ type Subaccount struct {
 	CompanyID    string    `json:"company_id"`
 	SubaccountID string    `json:"subaccount_id"`
 	PixKey       string    `json:"pix_key"`
+    PixKeyType   string    `json:"pix_key_type"`
 	CreatedAt    time.Time `json:"created_at"`
 }

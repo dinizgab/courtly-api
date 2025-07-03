@@ -80,6 +80,7 @@ func (r *companyRepositoryImpl) FindByID(ctx context.Context, id string) (entity
 		&company.CNPJ,
 		&company.Slug,
         &company.PixKey,
+        &company.PixKeyType,
 	)
 	if err != nil {
 		if err == pgx.ErrNoRows {

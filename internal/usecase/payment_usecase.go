@@ -71,6 +71,7 @@ func (uc *pixGatewayUsecaseImpl) CreateSubaccount(ctx context.Context, company e
 	subaccountEntity := entity.Subaccount{
 		CompanyID: company.ID,
 		PixKey:    subaccount.PixKey,
+        PixKeyType: company.PixKeyType,
 	}
 
 	err = uc.repo.CreateSubaccount(ctx, subaccountEntity)

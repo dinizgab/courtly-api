@@ -59,7 +59,7 @@ func NewPaymentRepository(db database.Database) PaymentRepository {
 }
 
 func (r *paymentRepositoryImpl) CreateSubaccount(ctx context.Context, subaccount entity.Subaccount) error {
-	_, err := r.db.Exec(ctx, createPixSubaccountQuery, subaccount.CompanyID, subaccount.PixKey)
+    _, err := r.db.Exec(ctx, createPixSubaccountQuery, subaccount.CompanyID, subaccount.PixKey, subaccount.PixKeyType)
 	if err != nil {
         return fmt.Errorf("paymentRepositoryImpl.CreateSubaccount - failed to create subaccount: %w", err)
 	}
