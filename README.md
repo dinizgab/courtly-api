@@ -1,56 +1,49 @@
 # Courtly API
+- Go API for managing sports court reservations, Pix payments, and sending notifications. API implementation for [Courtly](https://github.com/dinizgab/courtly-web).
 
-API em Go para gerenciar reservas de quadras esportivas, pagamentos via Pix e envio de notificações.
-
-## Requisitos
-
+## Requirements.
 - Go 1.24+
 - PostgreSQL
-- [Goose](https://github.com/pressly/goose) para migrações
-- Docker (opcional para ambiente local)
+- Goose for migrations
+- Docker (optional for local environment)
 
-## Variáveis de ambiente
+## Environment Variables
 
-| Nome | Descrição |
-| --- | --- |
-| `API_PORT` | Porta em que a API será exposta |
-| `JWT_SECRET` | Chave usada para assinar tokens JWT |
-| `DATABASE_URL` | URL de conexão com o banco PostgreSQL |
-| `SMTP_EMAIL` | Remetente utilizado para envio de e-mails |
-| `SMTP_HOST` | Host do servidor SMTP |
-| `SMTP_PORT` | Porta do servidor SMTP |
-| `SMTP_USER` | Usuário do servidor SMTP |
-| `SMTP_PASS` | Senha do servidor SMTP |
-| `OPENPIX_BASE_URL` | URL base da API OpenPix |
-| `OPENPIX_APP_ID` | ID de aplicação do OpenPix |
-| `STORAGE_PROJECT_URL` | URL do projeto de armazenamento Supabase |
-| `STORAGE_API_KEY` | Chave de API para o armazenamento |
+| Name                | Description |
+|---------------------|-------------|
+| API_PORT            | Port where the API will be exposed |
+| JWT_SECRET          | Key used to sign JWT tokens |
+| DATABASE_URL        | PostgreSQL database connection URL |
+| SMTP_EMAIL          | Sender used for sending emails |
+| SMTP_HOST           | SMTP server host |
+| SMTP_PORT           | SMTP server port |
+| SMTP_USER           | SMTP server user |
+| SMTP_PASS           | SMTP server password |
+| OPENPIX_BASE_URL    | Base URL for the OpenPix API |
+| OPENPIX_APP_ID      | OpenPix application ID |
+| STORAGE_PROJECT_URL | Supabase storage project URL |
+| STORAGE_API_KEY     | API key for storage |
 
-## Executando localmente
+## Running Locally
 
-1. **Inicie os serviços de apoio (opcional):**
+Start support services (optional):
+```bash
+make compose-up
+```
 
-   ```bash
-   make compose-up
-   ```
+Run database migrations:
+```bash
+make migration-up
+```
 
-2. **Execute as migrações do banco:**
+Start the application:
+```bash
+make run
+```
 
-   ```bash
-   make migration-up
-   ```
+The API will be accessible at **http://localhost:$API_PORT**.
 
-3. **Inicie a aplicação:**
-
-   ```bash
-   make run
-   ```
-
-A API estará acessível em `http://localhost:$API_PORT`.
-
-## Estrutura
-
-- `cmd/main.go` – ponto de entrada da aplicação.
-- `internal/` – implementação dos módulos de domínio, repositórios, casos de uso e handlers.
-- `migrations/` – scripts SQL para criação e alteração do banco de dados.
-
+## Structure
+- `cmd/main.go` – application entry point.
+- `internal/` – domain modules, repositories, use cases, and handlers implementation.
+- `migrations/` – SQL scripts for database creation and modification.
